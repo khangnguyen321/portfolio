@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Khang Nguyen — Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- CURSOR -->
+    <div id="cursor"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- THREE.JS HERO CANVAS (fixed behind) -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- CIRCUIT / CODE RAIN CANVAS -->
+    <canvas id="flow-canvas"></canvas>
+
+    <!-- NOISE OVERLAY -->
+    <div id="noise-overlay"></div>
+
+    <!-- PROGRESS BAR -->
+    <div id="progress"></div>
+
+    <!-- ─── INTRO SCREEN ───────────────────────── -->
+    <div id="intro">
+      <div class="scan-beam" id="beam1"></div>
+      <div class="scan-beam" id="beam2"></div>
+
+      <!-- INTERLOCKED KN LOGO — shared-spine design -->
+      <div id="intro-mark">
+        <svg
+          viewBox="0 0 120 120"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          role="img"
+          aria-label="KN interlocked monogram"
+        >
+          <defs>
+            <linearGradient id="spine-g" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1a6eff" />
+              <stop offset="100%" stop-color="#ff4d1a" />
+            </linearGradient>
+            <linearGradient id="lime-g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e8ff47" stop-opacity="0.2" />
+              <stop offset="100%" stop-color="#e8ff47" stop-opacity="0" />
+            </linearGradient>
+            <radialGradient id="glow-g" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#e8ff47" stop-opacity="0.06" />
+              <stop offset="100%" stop-color="#e8ff47" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- Outer ring -->
+          <circle
+            cx="60"
+            cy="60"
+            r="56"
+            stroke="rgba(100,130,255,0.15)"
+            stroke-width="1"
+          />
+          <!-- Inner decorative ring -->
+          <circle
+            cx="60"
+            cy="60"
+            r="48"
+            stroke="rgba(255,77,26,0.08)"
+            stroke-width="0.5"
+            stroke-dasharray="4 4"
+          />
+          <!-- Center glow -->
+          <circle cx="60" cy="60" r="56" fill="url(#glow-g)" />
+
+          <!-- K left vertical — blue -->
+          <line
+            x1="22"
+            y1="20"
+            x2="22"
+            y2="100"
+            stroke="#1a6eff"
+            stroke-width="5.5"
+            stroke-linecap="round"
+          />
+          <!-- K upper arm — blue, ends at shared spine top -->
+          <line
+            x1="22"
+            y1="60"
+            x2="56"
+            y2="20"
+            stroke="#1a6eff"
+            stroke-width="5.5"
+            stroke-linecap="round"
+          />
+          <!-- K lower arm — blue, ends at shared spine bottom -->
+          <line
+            x1="22"
+            y1="60"
+            x2="56"
+            y2="100"
+            stroke="#1a6eff"
+            stroke-width="5.5"
+            stroke-linecap="round"
+          />
+
+          <!-- SHARED SPINE — gradient blue→orange (the interlocking element) -->
+          <line
+            x1="56"
+            y1="20"
+            x2="56"
+            y2="100"
+            stroke="url(#spine-g)"
+            stroke-width="5.5"
+            stroke-linecap="round"
+          />
+
+          <!-- N diagonal — orange (from top of shared spine to bottom-right) -->
+          <line
+            x1="56"
+            y1="20"
+            x2="88"
+            y2="100"
+            stroke="#ff4d1a"
+            stroke-width="5.5"
+            stroke-linecap="round"
+          />
+          <!-- N right vertical — orange -->
+          <line
+            x1="88"
+            y1="20"
+            x2="88"
+            y2="100"
+            stroke="#ff4d1a"
+            stroke-width="5.5"
+            stroke-linecap="round"
+          />
+
+          <!-- Corner registration marks -->
+          <path
+            d="M4 16 L4 4 L16 4"
+            stroke="rgba(232,255,71,0.25)"
+            stroke-width="1"
+          />
+          <path
+            d="M104 4 L116 4 L116 16"
+            stroke="rgba(232,255,71,0.25)"
+            stroke-width="1"
+          />
+          <path
+            d="M4 104 L4 116 L16 116"
+            stroke="rgba(232,255,71,0.12)"
+            stroke-width="1"
+          />
+          <path
+            d="M104 116 L116 116 L116 104"
+            stroke="rgba(232,255,71,0.12)"
+            stroke-width="1"
+          />
+        </svg>
+      </div>
+
+      <div id="intro-wordmark">Khang Nguyen &nbsp;·&nbsp; Portfolio</div>
+      <div class="intro-progress-track">
+        <div id="intro-fill"></div>
+      </div>
+      <div id="intro-num">000%</div>
+      <button id="enter-btn" onclick="enterSite()">
+        <span>Enter Portfolio</span>
+      </button>
+    </div>
+
+    <!-- ─── SIDE NAV WITH ICONS ──────────────── -->
+    <nav id="sidenav">
+      <div class="sn-item active" data-s="hero" onclick="navTo('hero')">
+        <span class="sn-label">Home</span>
+        <div class="sn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10" />
+          </svg>
+        </div>
+      </div>
+      <div class="sn-item" data-s="about" onclick="navTo('about')">
+        <span class="sn-label">About</span>
+        <div class="sn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20C4 16 7.6 13 12 13S20 16 20 20" />
+          </svg>
+        </div>
+      </div>
+      <div class="sn-item" data-s="experience" onclick="navTo('experience')">
+        <span class="sn-label">Work</span>
+        <div class="sn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 7V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V7" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+          </svg>
+        </div>
+      </div>
+      <div class="sn-item" data-s="skills" onclick="navTo('skills')">
+        <span class="sn-label">Skills</span>
+        <div class="sn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        </div>
+      </div>
+      <div class="sn-item" data-s="education" onclick="navTo('education')">
+        <span class="sn-label">Education</span>
+        <div class="sn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 10L12 5 2 10 12 15 22 10Z" />
+            <path d="M6 12.5V17.5C6 17.5 8.5 20 12 20S18 17.5 18 17.5V12.5" />
+            <line x1="22" y1="10" x2="22" y2="16" />
+          </svg>
+        </div>
+      </div>
+      <div class="sn-item" data-s="contact" onclick="navTo('contact')">
+        <span class="sn-label">Contact</span>
+        <div class="sn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <polyline points="2,4 12,13 22,4" />
+          </svg>
+        </div>
+      </div>
+    </nav>
+
+    <div id="loc">
+      <div class="loc-pulse"></div>
+      <span>Atlanta, Georgia</span>
+    </div>
+
+    <!-- ─── SCROLLER ────────────────────────── -->
+    <div id="scroller">
+      <div id="main">
+        <!-- ═══════ HERO ═══════════════════════════ -->
+        <section id="hero">
+          <div class="hero-eyebrow">Curriculum Vitae &nbsp;/&nbsp; 2025</div>
+
+          <!-- INTERLOCKED KN LOGO IN HERO -->
+          <div id="hero-monogram">
+            <svg
+              viewBox="0 0 120 120"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              role="img"
+              aria-label="KN"
+            >
+              <defs>
+                <linearGradient id="hs-spine" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#1a6eff" />
+                  <stop offset="100%" stop-color="#ff4d1a" />
+                </linearGradient>
+                <radialGradient id="hs-glow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#e8ff47" stop-opacity="0.08" />
+                  <stop offset="100%" stop-color="#e8ff47" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <circle
+                cx="60"
+                cy="60"
+                r="56"
+                stroke="rgba(100,130,255,0.15)"
+                stroke-width="1"
+              />
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                stroke="rgba(255,77,26,0.08)"
+                stroke-width="0.5"
+                stroke-dasharray="3 5"
+              />
+              <circle cx="60" cy="60" r="56" fill="url(#hs-glow)" />
+              <line
+                x1="22"
+                y1="20"
+                x2="22"
+                y2="100"
+                stroke="#1a6eff"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="22"
+                y1="60"
+                x2="56"
+                y2="20"
+                stroke="#1a6eff"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="22"
+                y1="60"
+                x2="56"
+                y2="100"
+                stroke="#1a6eff"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="56"
+                y1="20"
+                x2="56"
+                y2="100"
+                stroke="url(#hs-spine)"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="56"
+                y1="20"
+                x2="88"
+                y2="100"
+                stroke="#ff4d1a"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="88"
+                y1="20"
+                x2="88"
+                y2="100"
+                stroke="#ff4d1a"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <circle cx="8" cy="8" r="2" fill="rgba(232,255,71,0.2)" />
+              <circle cx="112" cy="8" r="2" fill="rgba(232,255,71,0.2)" />
+              <circle cx="8" cy="112" r="1.5" fill="rgba(232,255,71,0.1)" />
+              <circle cx="112" cy="112" r="1.5" fill="rgba(232,255,71,0.1)" />
+            </svg>
+          </div>
+
+          <div class="hero-name-wrap">
+            <span class="hero-first" id="hf">Khang</span>
+            <span class="hero-last">Nguyen</span>
+          </div>
+
+          <!-- Decorative rule -->
+          <svg
+            class="hero-rule"
+            viewBox="0 0 500 20"
+            width="380"
+            height="20"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <line
+              x1="0"
+              y1="10"
+              x2="190"
+              y2="10"
+              stroke="rgba(26,110,255,0.2)"
+              stroke-width="1"
+            />
+            <circle cx="205" cy="10" r="2" fill="rgba(232,255,71,0.4)" />
+            <rect
+              x="218"
+              y="7"
+              width="36"
+              height="6"
+              fill="none"
+              stroke="rgba(232,255,71,0.2)"
+              stroke-width="1"
+            />
+            <circle cx="268" cy="10" r="2" fill="rgba(232,255,71,0.3)" />
+            <line
+              x1="283"
+              y1="10"
+              x2="500"
+              y2="10"
+              stroke="rgba(255,77,26,0.15)"
+              stroke-width="1"
+            />
+          </svg>
+
+          <p class="hero-tagline">
+            Project Engineer &nbsp;·&nbsp; Full-Stack Developer &nbsp;·&nbsp;
+            UI/UX Designer
+          </p>
+
+          <div class="hero-scroll-hint">
+            <span class="hs-text">Scroll</span>
+            <div class="hs-bar"></div>
+          </div>
+        </section>
+
+        <!-- ═══════ ABOUT ════════════════════════ -->
+        <section id="about">
+          <div class="inner">
+            <div class="sec-label reveal">
+              <h2 class="sec-num">01</h2>
+              <h2 class="sec-title">About</h2>
+              <div class="sec-line"></div>
+            </div>
+            <div class="about-grid-wrap">
+              <div class="about-left">
+                <p class="about-quote">
+                  A rare hybrid: <em>engineer by day,</em><br />
+                  <strong>developer by craft.</strong><br />
+                  I live where systems meet screens.
+                </p>
+                <p class="about-body">
+                  From overseeing multi-million dollar facility decommissioning
+                  projects to architecting e-commerce platforms from scratch — I
+                  bring both the blueprint and the code. Nine years building
+                  things that matter, across two very different disciplines that
+                  turn out to complement each other perfectly.
+                </p>
+              </div>
+              <div class="vert-rule"></div>
+              <div class="about-right">
+                <div class="stats-grid reveal">
+                  <div class="stat-cell">
+                    <div class="stat-n counter" data-t="9">0</div>
+                    <div class="stat-l">Years Active</div>
+                  </div>
+                  <div class="stat-cell">
+                    <div class="stat-n counter" data-t="6">0</div>
+                    <div class="stat-l">Roles Held</div>
+                  </div>
+                  <div class="stat-cell">
+                    <div class="stat-n">∞</div>
+                    <div class="stat-l">Projects</div>
+                  </div>
+                  <div class="stat-cell">
+                    <div class="stat-n counter" data-t="2">0</div>
+                    <div class="stat-l">Disciplines</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════ EXPERIENCE ══════════════════ -->
+        <section id="experience">
+          <div class="inner">
+            <div class="sec-label reveal">
+              <h2 class="sec-num">02</h2>
+              <h2 class="sec-title">Experience</h2>
+              <div class="sec-line"></div>
+            </div>
+            <div class="exp-layout">
+              <div class="exp-spine">
+                <div class="spine-year lit">2024 — Now</div>
+                <div class="spine-year lit">2023 — Now</div>
+                <div class="spine-year">2022 — 2023</div>
+                <div class="spine-year">2019 — 2021</div>
+                <div class="spine-year">2016 — 2019</div>
+                <div class="spine-year">2016 — 2017</div>
+              </div>
+              <div class="exp-cards">
+                <div class="exp-card">
+                  <div class="exp-card-header">
+                    <div class="exp-title">Project Engineer</div>
+                    <div class="exp-date">2024 — Now</div>
+                  </div>
+                  <div class="exp-org">
+                    <span class="co">United Parcel Service</span
+                    ><span class="sep">/</span
+                    ><span style="color: var(--text-muted)">Atlanta, GA</span>
+                  </div>
+                  <p class="exp-body">
+                    Lead facility decommissioning projects — overseeing shutdown
+                    sequencing, equipment removal, site remediation, and asset
+                    disposition. Full compliance with environmental regulations,
+                    safety protocols, and zero operational disruption.
+                  </p>
+                  <div class="exp-chips">
+                    <span class="chip">Project Mgmt</span
+                    ><span class="chip">Decommissioning</span>
+                    <span class="chip">Compliance</span
+                    ><span class="chip">Contractor Ops</span>
+                  </div>
+                </div>
+                <div class="exp-card">
+                  <div class="exp-card-header">
+                    <div class="exp-title">BaSE — REFCO Coordinator</div>
+                    <div class="exp-date">2023 — Now</div>
+                  </div>
+                  <div class="exp-org">
+                    <span class="co">United Parcel Service</span>
+                  </div>
+                  <p class="exp-body">
+                    Manage all RFAs under $500K — budget preparation,
+                    reconciliation, expense vs. capitalization classification,
+                    and audit documentation on behalf of senior leadership for
+                    timely approvals.
+                  </p>
+                  <div class="exp-chips">
+                    <span class="chip">Budget Mgmt</span
+                    ><span class="chip">RFA Processing</span
+                    ><span class="chip">Power BI</span>
+                  </div>
+                </div>
+                <div class="exp-card">
+                  <div class="exp-card-header">
+                    <div class="exp-title">
+                      Buildings &amp; Systems Engineering
+                    </div>
+                    <div class="exp-date">2022 — 2023</div>
+                  </div>
+                  <div class="exp-org">
+                    <span class="co">United Parcel Service</span>
+                  </div>
+                  <p class="exp-body">
+                    Technical and logistical support for automation teams —
+                    troubleshooting, parts management, mechanic supervision, and
+                    inventory control via the Maximo system.
+                  </p>
+                  <div class="exp-chips">
+                    <span class="chip">Maximo</span
+                    ><span class="chip">Automation</span
+                    ><span class="chip">Inventory</span>
+                  </div>
+                </div>
+                <div class="exp-card">
+                  <div class="exp-card-header">
+                    <div class="exp-title">Full-Stack Web Developer</div>
+                    <div class="exp-date">2019 — 2021</div>
+                  </div>
+                  <div class="exp-org">
+                    <span class="co">Atlanta Network Technology</span>
+                  </div>
+                  <p class="exp-body">
+                    Built and maintained e-commerce platforms end-to-end — UI/UX
+                    design through backend systems, feature implementation, and
+                    stakeholder alignment using PHP, JavaScript, HTML5, CSS3,
+                    and MySQL.
+                  </p>
+                  <div class="exp-chips">
+                    <span class="chip">PHP</span
+                    ><span class="chip">JavaScript</span>
+                    <span class="chip">MySQL</span
+                    ><span class="chip">UI/UX</span>
+                  </div>
+                </div>
+                <div class="exp-card">
+                  <div class="exp-card-header">
+                    <div class="exp-title">Wedding Video Editor</div>
+                    <div class="exp-date">2016 — 2019</div>
+                  </div>
+                  <div class="exp-org">
+                    <span class="co">Capture The Light — CTL</span>
+                  </div>
+                  <p class="exp-body">
+                    Captured and edited cinematic wedding ceremony footage and
+                    photography, producing high-quality visual keepsakes with
+                    Premiere Pro.
+                  </p>
+                  <div class="exp-chips">
+                    <span class="chip">Premiere Pro</span
+                    ><span class="chip">Photography</span>
+                  </div>
+                </div>
+                <div class="exp-card">
+                  <div class="exp-card-header">
+                    <div class="exp-title">Graphic Design Intern</div>
+                    <div class="exp-date">2016 — 2017</div>
+                  </div>
+                  <div class="exp-org">
+                    <span class="co">KNV Printing</span>
+                  </div>
+                  <p class="exp-body">
+                    Web content management, layout design, logos, and icons to
+                    maintain cohesive visual brand identity across print and
+                    digital channels.
+                  </p>
+                  <div class="exp-chips">
+                    <span class="chip">Illustrator</span
+                    ><span class="chip">Brand Design</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════ SKILLS ═══════════════════════ -->
+        <section id="skills">
+          <div class="inner">
+            <div class="sec-label reveal">
+              <h2 class="sec-num">03</h2>
+              <h2 class="sec-title">Skills &amp; Expertise</h2>
+              <div class="sec-line"></div>
+            </div>
+            <div class="skills-layout">
+              <div id="skill-canvas-wrap">
+                <canvas id="skill-canvas"></canvas>
+              </div>
+              <div class="skill-list">
+                <div class="skill-row">
+                  <div class="skill-row-top">
+                    <span class="skill-name-txt">JavaScript / PHP</span>
+                    <span class="skill-pct">88%</span>
+                  </div>
+                  <div class="skill-track">
+                    <div class="skill-fill" data-w="88"></div>
+                  </div>
+                  <div class="skill-sub">Full-Stack Development</div>
+                </div>
+                <div class="skill-row">
+                  <div class="skill-row-top">
+                    <span class="skill-name-txt">HTML5 / CSS3</span>
+                    <span class="skill-pct">95%</span>
+                  </div>
+                  <div class="skill-track">
+                    <div class="skill-fill" data-w="95"></div>
+                  </div>
+                  <div class="skill-sub">Frontend Engineering</div>
+                </div>
+                <div class="skill-row">
+                  <div class="skill-row-top">
+                    <span class="skill-name-txt">Project Management</span>
+                    <span class="skill-pct">90%</span>
+                  </div>
+                  <div class="skill-track">
+                    <div class="skill-fill" data-w="90"></div>
+                  </div>
+                  <div class="skill-sub">Engineering Operations</div>
+                </div>
+                <div class="skill-row">
+                  <div class="skill-row-top">
+                    <span class="skill-name-txt">Figma / Illustrator</span>
+                    <span class="skill-pct">78%</span>
+                  </div>
+                  <div class="skill-track">
+                    <div class="skill-fill" data-w="78"></div>
+                  </div>
+                  <div class="skill-sub">UI/UX &amp; Brand Design</div>
+                </div>
+                <div class="skill-row">
+                  <div class="skill-row-top">
+                    <span class="skill-name-txt">Power BI / AutoCAD</span>
+                    <span class="skill-pct">82%</span>
+                  </div>
+                  <div class="skill-track">
+                    <div class="skill-fill" data-w="82"></div>
+                  </div>
+                  <div class="skill-sub">Data &amp; Technical Drafting</div>
+                </div>
+                <div class="skill-row">
+                  <div class="skill-row-top">
+                    <span class="skill-name-txt">Adobe Premiere Pro</span>
+                    <span class="skill-pct">84%</span>
+                  </div>
+                  <div class="skill-track">
+                    <div class="skill-fill" data-w="84"></div>
+                  </div>
+                  <div class="skill-sub">Video Production</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════ EDUCATION ═══════════════════ -->
+        <section id="education">
+          <div class="inner">
+            <div class="sec-label reveal">
+              <h2 class="sec-num">04</h2>
+              <h2 class="sec-title">Education &amp; Credentials</h2>
+              <div class="sec-line"></div>
+            </div>
+            <div class="edu-layout">
+              <div class="edu-card reveal">
+                <svg
+                  class="edu-card-geo"
+                  viewBox="0 0 140 140"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <polygon
+                    points="70,5 135,35 135,105 70,135 5,105 5,35"
+                    stroke="var(--blue)"
+                    stroke-width="1"
+                    fill="none"
+                  />
+                  <polygon
+                    points="70,20 120,45 120,95 70,120 20,95 20,45"
+                    stroke="var(--blue)"
+                    stroke-width="0.5"
+                    fill="none"
+                  />
+                  <circle
+                    cx="70"
+                    cy="70"
+                    r="30"
+                    stroke="var(--lime)"
+                    stroke-width="0.5"
+                    stroke-dasharray="3 4"
+                  />
+                </svg>
+                <div class="edu-badge">
+                  <span class="edu-badge-dot"></span>Degree
+                </div>
+                <div class="edu-degree-txt">B.S. Computer Science</div>
+                <div class="edu-school-txt">Georgia Gwinnett College</div>
+                <div class="edu-year-txt">2014 — 2019</div>
+              </div>
+              <div class="edu-card reveal">
+                <svg
+                  class="edu-card-geo"
+                  viewBox="0 0 140 140"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="10"
+                    y="10"
+                    width="120"
+                    height="120"
+                    stroke="var(--blue)"
+                    stroke-width="1"
+                  />
+                  <rect
+                    x="25"
+                    y="25"
+                    width="90"
+                    height="90"
+                    stroke="var(--blue)"
+                    stroke-width="0.5"
+                  />
+                  <rect
+                    x="40"
+                    y="40"
+                    width="60"
+                    height="60"
+                    stroke="var(--blue)"
+                    stroke-width="0.5"
+                    stroke-dasharray="3 3"
+                  />
+                  <circle
+                    cx="70"
+                    cy="70"
+                    r="12"
+                    stroke="var(--lime)"
+                    stroke-width="0.5"
+                  />
+                </svg>
+                <div class="edu-badge" style="color: var(--blue-b)">
+                  <span
+                    class="edu-badge-dot"
+                    style="
+                      background: var(--blue-b);
+                      box-shadow: 0 0 6px var(--blue-b);
+                    "
+                  ></span
+                  >Certification
+                </div>
+                <div class="edu-degree-txt">Microsoft Network Associate</div>
+                <div class="edu-school-txt">MTA — Network Fundamentals</div>
+                <div class="edu-year-txt">2017</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════ CONTACT ══════════════════════ -->
+        <section id="contact">
+          <div class="inner">
+            <div class="contact-left">
+              <div class="contact-pre reveal">Get in touch</div>
+              <div class="contact-head reveal">
+                <span class="ch-plain">Let's</span>
+                <span class="ch-accent">Connect</span>
+              </div>
+              <div class="contact-tiles reveal">
+                <a class="contact-tile" href="tel:6787563756">
+                  <div class="ct-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                    >
+                      <path
+                        d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14v2.92z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="ct-info">
+                    <div class="ct-val">(678) 756-3756</div>
+                    <div class="ct-label">Phone</div>
+                  </div>
+                </a>
+                <a class="contact-tile" href="/cdn-cgi/l/email-protection#dfb7b4f1b1b8aaa6bab1e6ee9fb8b2beb6b3f1bcb0b2">
+                  <div class="ct-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                    >
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <polyline points="2,4 12,13 22,4" />
+                    </svg>
+                  </div>
+                  <div class="ct-info">
+                    <div class="ct-val"><span class="__cf_email__" data-cfemail="3d555613535a48445853040c7d5a505c5451135e5250">[email&#160;protected]</span></div>
+                    <div class="ct-label">Email</div>
+                  </div>
+                </a>
+                <a class="contact-tile" href="#">
+                  <div class="ct-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                    >
+                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                  </div>
+                  <div class="ct-info">
+                    <div class="ct-val">Atlanta, Georgia</div>
+                    <div class="ct-label">Location</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <!-- CONTACT FORM — sends to hk.nguyen91@gmail.com -->
+            <div class="contact-right reveal">
+              <div class="form-title">Send a Message</div>
+              <form
+                class="contact-form"
+                action="https://formsubmit.co/hk.nguyen91@gmail.com"
+                method="POST"
+                id="contactForm"
+              >
+                <!-- FormSubmit configuration -->
+                <input
+                  type="hidden"
+                  name="_subject"
+                  value="New message from your portfolio"
+                />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
+                <input type="text" name="_honey" style="display: none" />
+
+                <div class="form-group">
+                  <label for="form-name">Your Name</label>
+                  <input
+                    type="text"
+                    id="form-name"
+                    name="name"
+                    placeholder="Khang Nguyen"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="form-email">Email Address</label>
+                  <input
+                    type="email"
+                    id="form-email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="form-subject">Subject</label>
+                  <input
+                    type="text"
+                    id="form-subject"
+                    name="subject"
+                    placeholder="Project inquiry, collaboration..."
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="form-message">Message</label>
+                  <textarea
+                    id="form-message"
+                    name="message"
+                    placeholder="Tell me about your project or opportunity..."
+                    required
+                  ></textarea>
+                </div>
+                <button type="submit" class="form-submit-btn">
+                  <span>Send Message</span>
+                  <svg
+                    class="btn-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+                <div class="form-success" id="formSuccess">
+                  ✓ Message sent! I'll be in touch soon.
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- /main -->
+    </div>
+    <!-- /scroller -->
+
+    <!-- MOBILE NAV WITH ICONS -->
+    <nav id="mob-nav">
+      <div class="mn-item active" data-s="hero" onclick="navTo('hero')">
+        <div class="mn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10" />
+          </svg>
+        </div>
+        <span class="mn-lbl">Home</span>
+      </div>
+      <div class="mn-item" data-s="about" onclick="navTo('about')">
+        <div class="mn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20C4 16 7.6 13 12 13S20 16 20 20" />
+          </svg>
+        </div>
+        <span class="mn-lbl">About</span>
+      </div>
+      <div class="mn-item" data-s="experience" onclick="navTo('experience')">
+        <div class="mn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 7V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V7" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+          </svg>
+        </div>
+        <span class="mn-lbl">Work</span>
+      </div>
+      <div class="mn-item" data-s="skills" onclick="navTo('skills')">
+        <div class="mn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        </div>
+        <span class="mn-lbl">Skills</span>
+      </div>
+      <div class="mn-item" data-s="education" onclick="navTo('education')">
+        <div class="mn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 10L12 5 2 10 12 15 22 10Z" />
+            <path d="M6 12.5V17.5C6 17.5 8.5 20 12 20S18 17.5 18 17.5V12.5" />
+          </svg>
+        </div>
+        <span class="mn-lbl">Edu</span>
+      </div>
+      <div class="mn-item" data-s="contact" onclick="navTo('contact')">
+        <div class="mn-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <polyline points="2,4 12,13 22,4" />
+          </svg>
+        </div>
+        <span class="mn-lbl">Contac

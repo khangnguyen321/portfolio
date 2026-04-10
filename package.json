@@ -1,0 +1,15 @@
+{
+  "name": "khang-portfolio",
+  "version": "1.0.0",
+  "description": "Khang Nguyen's Portfolio Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": ["portfolio", "three.js"],
+  "author": "Khang Nguyen",
+  "license": "MIT"
+}
