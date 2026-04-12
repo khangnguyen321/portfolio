@@ -81,14 +81,15 @@ function bgLoop() {
   });
 
   // — Data packets —
-  PKTS.forEach((p, i) => {
+  for (let i = PKTS.length - 1; i >= 0; i--) {
+    const p = PKTS[i];
     p.t += p.speed;
     const A = NODES[p.conn.a], B = NODES[p.conn.b];
     const x = A.x + (B.x-A.x)*p.t, y = A.y + (B.y-A.y)*p.t;
     bgCtx.beginPath(); bgCtx.arc(x, y, 2.5, 0, Math.PI*2);
     bgCtx.fillStyle = 'rgba(232,255,71,0.8)'; bgCtx.fill();
     if (p.t >= 1) PKTS.splice(i, 1);
-  });
+  }
 
   // — Circuit nodes —
   NODES.forEach(n => {
@@ -183,6 +184,11 @@ anime({ targets:'#beam1', top:['0%','100%'], opacity:[0.6,0], duration:2800, loo
 anime({ targets:'#beam2', top:['100%','0%'], opacity:[0.4,0], duration:2200, loop:true, easing:'easeInOutSine', delay:900 });
 
 function enterSite() {
+  if (!window.THREE) {
+    const btn = document.getElementById('enter-btn');
+    if (btn) btn.querySelector('span').textContent = 'Loading...';
+    return;
+  }
   anime({
     targets: intro,
     opacity: [1, 0],
@@ -218,7 +224,7 @@ function enterSite() {
 /* ═════════════════════════════════════════════════════
    SCROLL SNAP NAVIGATION & ACTIVE STATES
 ═════════════════════════════════════════════════════ */
-const SECTIONS = ['hero','about','experience','skills','education','contact'];
+const SECTIONS = ['hero','about','experience','projects','skills','education','contact'];
 const isMobile = () => window.innerWidth <= 1024;
 
 function navTo(id) {
@@ -313,7 +319,7 @@ function initReveal() {
           setTimeout(() => { sf.style.width = sf.dataset.w + '%'; }, 200 + i * 90);
         });
       }
-      if (el.classList.contains('edu-card')) {
+      if (el.classList.contains('edu-card') || el.classList.contains('proj-card')) {
         anime({ targets:el, opacity:[0,1], translateY:[32,0], duration:900, easing:'easeOutExpo' });
       }
       if (el.classList.contains('contact-pre') || el.classList.contains('contact-head') ||
@@ -324,7 +330,7 @@ function initReveal() {
     });
   }, { threshold:0.1, root: isMobile() ? null : scroller });
 
-  document.querySelectorAll('.reveal,.sec-label,.about-quote,.about-body,.stats-grid,.exp-card,#skill-canvas-wrap,.skill-list,.edu-card,.contact-pre,.contact-head,.contact-tiles,.contact-right').forEach(el => io.observe(el));
+  document.querySelectorAll('.reveal,.sec-label,.about-quote,.about-body,.stats-grid,.exp-card,.proj-card,#skill-canvas-wrap,.skill-list,.edu-card,.contact-pre,.contact-head,.contact-tiles,.contact-right').forEach(el => io.observe(el));
 }
 initReveal();
 
@@ -462,20 +468,75 @@ if (hfEl) {
 }
 
 /* ═════════════════════════════════════════════════════
-   CONTACT FORM — success feedback
+   CONTACT FORM — fetch submit + success feedback
 ═════════════════════════════════════════════════════ */
 const cForm = document.getElementById('contactForm');
 if (cForm) {
-  // FormSubmit redirects by default. We show success if _next param is set or handle via JS.
-  // For pure JS fallback — intercept and use fetch:
   cForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const btn = cForm.querySelector('.form-submit-btn');
     const success = document.getElementById('formSuccess');
-    // Let the native form submission to FormSubmit handle it.
-    // Just show visual feedback:
     if (btn) {
       btn.querySelector('span').textContent = 'Sending...';
       btn.disabled = true;
     }
+    try {
+      const data = Object.fromEntries(new FormData(cForm));
+      const res = await fetch('https://formsubmit.co/ajax/hk.nguyen91@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        if (success) { success.style.display = 'block'; }
+        if (btn) { btn.style.display = 'none'; }
+        cForm.reset();
+      } else {
+        throw new Error('Send failed');
+      }
+    } catch {
+      if (btn) {
+        btn.querySelector('span').textContent = 'Try Again';
+        btn.disabled = false;
+      }
+    }
   });
 }
+
+/* ═════════════════════════════════════════════════════
+   KEYBOARD NAVIGATION — side nav accessibility
+═════════════════════════════════════════════════════ */
+document.querySelectorAll('.sn-item, .mn-item').forEach(el => {
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'button');
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const id = el.dataset.s;
+      if (id) navTo(id);
+    }
+  });
+});
+
+/* ═════════════════════════════════════════════════════
+   EXPERIENCE CARDS — highlight active card on scroll
+═════════════════════════════════════════════════════ */
+function initExpHighlight() {
+  const expInner = document.querySelector('#experience .inner');
+  if (!expInner) return;
+
+  const cards = Array.from(document.querySelectorAll('.exp-card'));
+  const years = Array.from(document.querySelectorAll('.spine-year'));
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(({ isIntersecting, target }) => {
+      const idx = cards.indexOf(target);
+      if (idx === -1) return;
+      target.classList.toggle('exp-card--active', isIntersecting);
+      if (years[idx]) years[idx].classList.toggle('lit', isIntersecting);
+    });
+  }, { root: isMobile() ? null : expInner, threshold: 0.5 });
+
+  cards.forEach(c => io.observe(c));
+}
+initExpHighlight();

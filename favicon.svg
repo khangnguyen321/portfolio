@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" fill="#050814"/>
+  <!-- K left vertical -->
+  <line x1="6" y1="5" x2="6" y2="27" stroke="#1a6eff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- K upper arm -->
+  <line x1="6" y1="16" x2="15" y2="5" stroke="#1a6eff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- K lower arm -->
+  <line x1="6" y1="16" x2="15" y2="27" stroke="#1a6eff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Shared spine -->
+  <line x1="15" y1="5" x2="15" y2="27" stroke="#ff4d1a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- N diagonal -->
+  <line x1="15" y1="5" x2="26" y2="27" stroke="#ff4d1a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- N right vertical -->
+  <line x1="26" y1="5" x2="26" y2="27" stroke="#ff4d1a" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

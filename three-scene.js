@@ -36,8 +36,8 @@ function initThreeJS() {
   const tetraMesh = new THREE.Mesh(tetraGeo, tetraMat);
   scene.add(tetraMesh);
 
-  // — Particle cloud —
-  const COUNT = 3000;
+  // — Particle cloud — reduce count on mobile for performance
+  const COUNT = window.innerWidth <= 768 ? 600 : 3000;
   const pGeo = new THREE.BufferGeometry();
   const positions = new Float32Array(COUNT * 3);
   const colors = new Float32Array(COUNT * 3);
