@@ -1122,6 +1122,7 @@ body:has(button:hover) #cursor-ring { border-color:rgba(255,77,26,0.5); transfor
 .proj-chips { display:flex; gap:6px; flex-wrap:wrap; position:relative; z-index:1; }
 .proj-footer {
   margin-top:16px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   position:relative; z-index:1;
 }
 .proj-status {
@@ -1133,6 +1134,15 @@ body:has(button:hover) #cursor-ring { border-color:rgba(255,77,26,0.5); transfor
 }
 .proj-status--live { color:var(--lime); border:1px solid rgba(232,255,71,0.25); background:var(--lime-g); }
 .proj-status--internal { color:var(--blue-b); border:1px solid rgba(26,110,255,0.2); background:var(--blue-gd); }
+.proj-link {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:'DM Mono',monospace; font-size:8px; letter-spacing:0.2em; text-transform:uppercase;
+  color:var(--blue-b); text-decoration:none;
+  border:1px solid rgba(26,110,255,0.25); padding:3px 10px;
+  transition:color 0.2s, border-color 0.2s;
+}
+.proj-link svg { width:10px; height:10px; }
+.proj-link:hover { color:var(--lime); border-color:rgba(232,255,71,0.35); }
 
 /* ═══════════════════════════════════════════
    EXPERIENCE CARD — active / in-view state
