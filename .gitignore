@@ -21,5 +21,6 @@ MEMORY.md
 
 # Local tool caches & scratch
 .npm-cache/
+.tools/
 *.tmp
 qa-tmp-*
