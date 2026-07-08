@@ -1,5 +1,25 @@
+# Dependencies
 node_modules/
-npm-debug.log
-.DS_Store
-.env
+
+# Logs
+npm-debug.log*
 *.log
+
+# Environment (none should ever exist here, but never commit one)
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Claude Code / loop-engineering meta — local tooling, not site content
+# (Express serves the repo root, so anything committed becomes web-accessible)
+.claude/
+CLAUDE.md
+MEMORY.md
+
+# Local tool caches & scratch
+.npm-cache/
+*.tmp
+qa-tmp-*
