@@ -6,6 +6,7 @@
 <title>Khang Nguyen — Systems That Ship Themselves.</title>
 <meta name="description" content="Khang Nguyen — Project Engineer and full-stack builder. Enterprise SaaS, workflow automation, and AI-enabled tooling. Builder of NoiGate, a self-hosted PaaS.">
 <meta name="theme-color" content="#D7DADD">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -24,6 +25,7 @@
   --line:    rgba(18,19,22,.16);
   --line-soft:rgba(18,19,22,.08);
   --accent:  #F59B2D;
+  --logo-glow: 245,155,45;   /* neon halo on the header monogram — rgb of --accent */
 
   --font-display:'Bricolage Grotesque',sans-serif;
   --font-body:'Instrument Sans',sans-serif;
@@ -94,11 +96,36 @@ header{
   position:fixed;top:0;left:0;right:0;z-index:200;
   display:flex;align-items:center;justify-content:space-between;
   padding:0 var(--pad-x);height:84px;
-  transition:background .4s,height .4s;
+  border-bottom:1px solid transparent;   /* reserved in both states so the box never changes size */
+  transition:background .4s,border-color .4s;
 }
-header.scrolled{background:rgba(215,218,221,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--line-soft);height:70px;}
-.logo{font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:-0.01em;color:var(--accent);}
+header.scrolled{background:rgba(215,218,221,.85);backdrop-filter:blur(16px);border-bottom-color:var(--line-soft);}
+.logo{font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:-0.01em;color:var(--accent);display:inline-flex;align-items:center;}
 .logo i{font-style:normal;color:var(--ink-faint);}
+/* ── logo video — kn monogram, two variants picked by JS: .alpha = VP9 WebM with a
+     real alpha channel (pure line-art, no plate; inverted to ink once the header
+     goes light), .chip = the mp4 on its black plate worn as a rounded badge for
+     browsers without VP9 alpha (Safari) or if the webm fails. The "/khang" text
+     stays in the DOM as the fallback until the video proves playable (.video-on). ── */
+.logo-video{display:none;width:46px;height:46px;object-fit:cover;pointer-events:none;}
+.logo-video.chip{border-radius:12px;}
+/* neon accent — sepia(1) first normalizes every hue (kills the clip's baked-in
+   blue sweep) so the whole mark lands on ONE amber; drop-shadows trace the alpha
+   silhouette as the halo. Both states use the IDENTICAL filter-function chain
+   (same functions, same order, values only) so the .4s transition interpolates
+   every component — no discrete snap, no mid-fade color split. Scrolled just
+   drops brightness so the mark reads as amber ink on the light header. */
+.logo-video.alpha{
+  transition:filter .4s;   /* rides the header background fade */
+  filter:sepia(1) saturate(2.4) hue-rotate(-8deg) brightness(1.08)
+         drop-shadow(0 0 5px rgba(var(--logo-glow),.60)) drop-shadow(0 0 14px rgba(var(--logo-glow),.28));
+}
+header.scrolled .logo-video.alpha{
+  filter:sepia(1) saturate(3.2) hue-rotate(-8deg) brightness(.55)
+         drop-shadow(0 0 4px rgba(var(--logo-glow),.50)) drop-shadow(0 0 12px rgba(var(--logo-glow),.22));
+}
+.logo.video-on .logo-video{display:block;}
+.logo.video-on .logo-text{display:none;}
 nav.links{display:flex;gap:30px;background:rgba(120,126,132,.32);backdrop-filter:blur(10px);border-radius:999px;padding:12px 30px;position:absolute;left:50%;transform:translateX(-50%);}
 nav.links a{font-size:14px;color:rgba(255,255,255,.85);transition:color .3s;}
 nav.links a:hover{color:#FFFFFF;}
@@ -182,7 +209,7 @@ h2.display{
 .hero-video{
   position:absolute;inset:0;z-index:2;width:100%;height:100%;
   object-fit:cover;object-position:var(--video-pos,30% 50%);
-  opacity:0;transition:opacity 1.2s ease;will-change:transform,filter;
+  opacity:0;transition:opacity 1.2s ease;will-change:filter;
 }
 .hero-video.on{opacity:1;}
 .hero-scrim{
@@ -457,7 +484,10 @@ footer{
 
 <!-- ═══ NAV — full width ═══ -->
 <header id="header">
-  <a class="logo" href="#hero">/khang</a>
+  <a class="logo" href="#hero" aria-label="Khang Nguyen — home">
+    <video class="logo-video" data-src="videos/logo-loop.mp4" data-webm="videos/logo-loop.webm" muted playsinline preload="none" disablepictureinpicture tabindex="-1" aria-hidden="true"></video>
+    <span class="logo-text">/khang</span>
+  </a>
   <nav class="links" aria-label="Primary">
     <a href="#statement">About</a>
     <a href="#work">Work</a>
@@ -472,7 +502,7 @@ footer{
   <div class="hero-stage">
     <div class="hero-media" aria-hidden="true">
       <div class="hero-backdrop"></div>
-      <video class="hero-video" id="hero-video" data-src="videos/blueprint-cube-hero.mp4" muted playsinline autoplay loop preload="metadata" disablepictureinpicture tabindex="-1"></video>
+      <video class="hero-video" id="hero-video" data-src="videos/blueprint-cube-hero-scrub.mp4" muted playsinline preload="metadata" disablepictureinpicture tabindex="-1"></video>
       <div class="hero-scrim"></div>
       <div class="hero-grain"></div>
       <div class="hero-grid"></div>
@@ -802,10 +832,15 @@ footer{
 
 <script>
 /* ═══ HERO CONFIG ═══
-   Scrub story (p 0→1): meta fades .10–.28 · text exits .50–.72 · dim from .55 ·
+   Scrub story (p 0→1): video scrub 0–.62 (scroll = animation time; frame frozen otherwise) ·
+   meta fades .10–.28 · text exits .50–.72 · dim from .55 ·
    card compression .62–.96 · blur .72–1 (3px shipped, ≤4px budget) · .96–1 card rests · sticky releases at 1. */
 const HERO_CFG = {
-  HERO_SCROLL_VH:200, VIDEO_SCALE_FROM:1.05, VIDEO_SCALE_TO:1.18,
+  HERO_SCROLL_VH:200,
+  SCRUB_START:0.0, SCRUB_END:0.62,  /* p-window mapped to video time; END==TRANSITION_START so the cube finishes before card compression */
+  SCRUB_SMOOTH:0.22,                /* per-rAF lerp toward target time */
+  SCRUB_FPS:24,                     /* frame grid for seek quantization — matches the all-intra encode */
+  SCRUB_END_PAD:0.06,               /* s held back from duration so `ended` never fires */
   PARALLAX_X:-40, PARALLAX_Y:-60, PARTICLE_PARALLAX_RATIO:0.5, GRID_PARALLAX_RATIO:0.22,
   DIM_START:0.55, DIM_MAX:0.35, BLUR_START:0.72, BLUR_MAX_PX:3,
   TRANSITION_START:0.62, TRANSITION_END:0.96, CARD_SCALE:0.44, CARD_SHIFT_Y_VH:-10, CARD_RADIUS_PX:20,
@@ -816,8 +851,8 @@ const HERO_CFG = {
   VIDEO_POS_DESKTOP:'30% 50%', VIDEO_POS_MOBILE:'50% 50%',
   HERO_VIDEO_POSTER:'videos/blueprint-cube-hero-poster.jpg',
   overrides:{
-    '(max-width:920px)':{VIDEO_SCALE_TO:1.12, PARALLAX_X:-20, PARALLAX_Y:-30, DIM_MAX:0.40, CARD_SCALE:0.58, CARD_SHIFT_Y_VH:-8},
-    '(max-width:620px)':{VIDEO_SCALE_TO:1.10, PARALLAX_X:-12, PARALLAX_Y:-20, GRID_OPACITY:0.35, CARD_SCALE:0.60, HERO_SCROLL_VH:180}
+    '(max-width:920px)':{PARALLAX_X:-20, PARALLAX_Y:-30, DIM_MAX:0.40, CARD_SCALE:0.58, CARD_SHIFT_Y_VH:-8},
+    '(max-width:620px)':{PARALLAX_X:-12, PARALLAX_Y:-20, GRID_OPACITY:0.35, CARD_SCALE:0.60, HERO_SCROLL_VH:180}
   }
 };
 
@@ -923,8 +958,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     const e = easeInOut(p);
     const vh = window.innerHeight/100;
 
-    const scale = cfg.VIDEO_SCALE_FROM + (cfg.VIDEO_SCALE_TO - cfg.VIDEO_SCALE_FROM)*e;
-    video.style.transform = 'translate3d(' + (cfg.PARALLAX_X*e) + 'px,' + (cfg.PARALLAX_Y*e) + 'px,0) scale(' + scale + ')';
+    setScrubTarget(p);   /* scroll drives the cube animation; the video frame itself never moves */
     const blur = cfg.BLUR_MAX_PX * ramp(p, cfg.BLUR_START, 1);
     video.style.filter = blur > .05 ? 'blur(' + blur + 'px)' : '';
 
@@ -949,6 +983,43 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     meta.style.opacity = 1 - ramp(p, cfg.META_FADE_START, cfg.META_FADE_END);
   }
 
+  /* ═══ SCROLL SCRUB — video time is a smoothed, frame-snapped function of p.
+     The video never plays; a self-chaining rAF lerps currentTime toward the target,
+     one seek in flight max, snapped to the 24fps frame grid so no seek resolves to
+     the frame already displayed. `seeked` re-arms the loop after slow seeks (iOS). */
+  let scrubT = 0, scrubRaf = 0;
+  function scrubReady(){
+    return attached && !failed && !reduceMotion && isFinite(video.duration) && video.duration > 0;
+  }
+  function setScrubTarget(p){
+    if(!scrubReady()) return;
+    const k = ramp(p, cfg.SCRUB_START, cfg.SCRUB_END);           /* linear — scroll maps 1:1 to time */
+    scrubT = Math.min(k * video.duration, video.duration - cfg.SCRUB_END_PAD);
+    scrubTick();
+  }
+  function scrubTick(){
+    if(scrubRaf) return;
+    scrubRaf = requestAnimationFrame(() => {
+      scrubRaf = 0;
+      if(!active || !scrubReady()) return;
+      const frame = 1 / cfg.SCRUB_FPS, cur = video.currentTime, d = scrubT - cur;
+      if(Math.abs(d) < frame * 0.5) return;                      /* converged — loop parks */
+      if(!video.seeking){
+        let next;
+        if(Math.abs(d) < frame){ next = scrubT; }               /* land exactly */
+        else {
+          next = Math.round((cur + d * cfg.SCRUB_SMOOTH) / frame) * frame;
+          /* lerp step rounded to zero frames but we're >1 frame out — force one
+             frame toward the target, else the loop spins parked-off-target forever */
+          if(Math.abs(next - cur) < frame * 0.5) next = cur + Math.sign(d) * frame;
+        }
+        if(Math.abs(next - cur) >= frame * 0.5) video.currentTime = next;
+      }
+      scrubTick();                                               /* keep converging */
+    });
+  }
+  video.addEventListener('seeked', scrubTick);
+
   let raf = 0, active = true, onScreen = true;
   function schedule(){
     if(reduceMotion || !active || raf) return;
@@ -962,45 +1033,31 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   /* video boot — saveData keeps src detached; poster only if configured.
      Precedence: error wins — `failed` gates every later readiness/retry hook. */
   const saveData = !!(navigator.connection && navigator.connection.saveData === true);
-  let blocked = false, failed = false, attached = false;
+  let failed = false, attached = false;
   if(HERO_CFG.HERO_VIDEO_POSTER) video.poster = HERO_CFG.HERO_VIDEO_POSTER;
   video.addEventListener('error', () => { failed = true; video.classList.remove('on'); });
   if(reduceMotion){
-    video.autoplay = false;   /* never plays — first frame acts as the poster */
     video.addEventListener('loadedmetadata', () => { video.currentTime = 0.001; }, {once:true});   /* preload=metadata stalls at readyState 1 — seek forces first-frame decode */
-    video.addEventListener('loadeddata', () => { video.currentTime = 0; video.pause(); video.classList.add('on'); }, {once:true});
+    video.addEventListener('loadeddata', () => { video.currentTime = 0; video.classList.add('on'); }, {once:true});
   } else {
-    video.addEventListener('playing', () => video.classList.add('on'));
-    video.addEventListener('loadeddata', () => { if(blocked && !failed) video.classList.add('on'); }, {once:true});   /* autoplay blocked before data arrived — paused first frame as cinematic still */
+    video.preload = 'auto';   /* scrubbing wants the whole file buffered; RM keeps the cheap metadata fetch */
+    video.addEventListener('loadeddata', () => { if(!failed){ video.classList.add('on'); schedule(); } }, {once:true});   /* schedule() so a mid-hero refresh seeks to the right frame */
   }
   if(!saveData && video.dataset.src){
     video.src = video.dataset.src;
     attached = true;
-    if(!reduceMotion){
-      const pr = video.play();
-      if(pr && pr.catch) pr.catch(() => {
-        blocked = true;
-        if(video.readyState >= 2) video.classList.add('on');
-        else if(video.readyState >= 1) video.currentTime = 0.001;
-        else video.addEventListener('loadedmetadata', () => { if(blocked && !failed) video.currentTime = 0.001; }, {once:true});
-        window.addEventListener('pointerdown', () => {   /* one-shot retry on first gesture */
-          if(blocked && !failed && active) video.play().then(() => { blocked = false; }).catch(() => {});
-        }, {once:true});
-      });
-    }
   }
 
-  /* offscreen / hidden-tab guard */
-  function canPlay(){ return attached && !reduceMotion && !blocked && !failed; }
+  /* offscreen / hidden-tab guard — the hero video is permanently paused now;
+     these gate the two rAF loops (choreography + scrub) instead of playback. */
   function resume(){
     active = true;
     schedule();
-    if(canPlay()) video.play().catch(() => {});
   }
   function suspend(){
     active = false;
     if(raf){ cancelAnimationFrame(raf); raf = 0; }
-    if(attached) video.pause();
+    if(scrubRaf){ cancelAnimationFrame(scrubRaf); scrubRaf = 0; }
   }
   new IntersectionObserver(entries => {
     entries.forEach(en => { onScreen = en.isIntersecting; onScreen ? resume() : suspend(); });
@@ -1058,6 +1115,64 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   }
   if(document.readyState === 'complete') start();
   else window.addEventListener('load', start, {once:true});
+})();
+
+/* ═══ LOGO VIDEO — kn monogram in the header on a fixed cadence.
+   Variant pick: VP9-alpha WebM (.alpha — transparent line-art) where supported,
+   else the mp4 on its black plate (.chip); a failing webm demotes itself to the
+   chip once. PERIOD_MS is start-to-start: the ~5s animation plays, rests on its
+   final frame (which matches the first), and begins again 7s after it last
+   started. The "/khang" text remains until first frame data exists; total media
+   failure restores it. Reduced motion shows the static first frame; data-saver
+   never fetches. ═══ */
+const LOGO_CFG = {PERIOD_MS:7000};
+(function(){
+  const link = document.querySelector('.logo');
+  const lv = link ? link.querySelector('.logo-video') : null;
+  if(!lv) return;
+  const saveData = !!(navigator.connection && navigator.connection.saveData === true);
+  if(saveData){ lv.remove(); return; }
+  lv.addEventListener('loadeddata', () => link.classList.add('video-on'));
+  lv.addEventListener('error', () => {
+    if(lv.classList.contains('alpha')){   /* webm failed → mp4 chip; text covers the reload gap */
+      link.classList.remove('video-on');
+      attach(false);
+      return;
+    }
+    link.classList.remove('video-on'); lv.remove();
+  });
+  function restart(){   /* hidden tabs defer the restart until the tab returns (file convention: nothing decodes unseen) */
+    if(!lv.isConnected) return;
+    if(document.hidden){ document.addEventListener('visibilitychange', restart, {once:true}); return; }
+    lv.currentTime = 0;
+    lv.play().catch(() => {});
+  }
+  lv.addEventListener('ended', () => {
+    const wait = Math.max(400, LOGO_CFG.PERIOD_MS - lv.duration*1000);
+    setTimeout(restart, wait);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if(!lv.isConnected || reduceMotion) return;
+    if(document.hidden){ if(!lv.paused) lv.pause(); }
+    else if(lv.paused && !lv.ended && lv.readyState >= 2) lv.play().catch(() => {});
+  });
+  function attach(alpha){
+    lv.classList.remove('alpha','chip');
+    lv.classList.add(alpha ? 'alpha' : 'chip');
+    lv.preload = 'auto';
+    lv.src = alpha ? lv.dataset.webm : lv.dataset.src;
+    if(reduceMotion){   /* static mark: force first-frame decode, never play */
+      lv.addEventListener('loadedmetadata', () => { lv.currentTime = 0.001; }, {once:true});
+      return;
+    }
+    const pr = lv.play();
+    if(pr && pr.catch) pr.catch(() => {
+      if(lv.readyState >= 1) lv.currentTime = 0.001;
+      else lv.addEventListener('loadedmetadata', () => { lv.currentTime = 0.001; }, {once:true});   /* blocked: static mark until first gesture */
+      window.addEventListener('pointerdown', () => { if(lv.isConnected) lv.play().catch(() => {}); }, {once:true});
+    });
+  }
+  attach(!!(lv.dataset.webm && lv.canPlayType('video/webm; codecs="vp9"')));
 })();
 </script>
 </body>

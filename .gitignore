@@ -24,3 +24,8 @@ MEMORY.md
 .tools/
 *.tmp
 qa-tmp-*
+
+# Raw video sources — only the encoded pipeline outputs ship
+# (raw exports are HEVC/oversized masters; encode first, commit the output)
+videos/logoLoop.mp4
+videos/cube4k*.mp4
