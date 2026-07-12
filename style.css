@@ -1268,7 +1268,8 @@
       body.sec-ink .wcard,
       body.sec-ink .appr-row .vis,
       body.sec-ink .step,
-      body.sec-ink .xp {
+      body.sec-ink .xp,
+      body.sec-ink .contact-card {
         background: linear-gradient(
           135deg,
           rgba(23, 26, 28, 0.55),
@@ -1386,12 +1387,15 @@
         font-weight: 500;
       }
 
-      /* liquid-glass card system */
+      /* liquid-glass card system (.contact-card shares the surface but is
+         excluded from the hover lift/shine — forms shouldn't move under a
+         typing cursor) */
       .svc,
       .wcard,
       .appr-row .vis,
       .step,
-      .xp {
+      .xp,
+      .contact-card {
         position: relative;
         isolation: isolate;
         overflow: hidden;
@@ -1420,7 +1424,8 @@
       .wcard::before,
       .appr-row .vis::before,
       .step::before,
-      .xp::before {
+      .xp::before,
+      .contact-card::before {
         content: "";
         position: absolute;
         z-index: -1;
@@ -1474,7 +1479,8 @@
       .wcard > *,
       .appr-row .vis > *,
       .step > *,
-      .xp > * {
+      .xp > *,
+      .contact-card > * {
         position: relative;
         z-index: 1;
       }
@@ -1572,58 +1578,105 @@
         }
       }
 
-      /* ── CTA (grid section, left-aligned content) ── */
-      #cta h2 {
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: clamp(36px, 5.6vw, 80px);
-        line-height: 1.04;
-        letter-spacing: -0.03em;
-        max-width: 16ch;
-        color: var(--ink);
+      /* ── contact form — single full-width liquid-glass card, centered
+         against the sticky eyebrow label now that .cta-copy is gone ── */
+      #cta .wrap {
+        /* explicit width: without .cta-copy's bulky text propping the row
+           open, this grid item's stretch alignment would otherwise resolve
+           against its own (now small) content size instead of the full track */
+        width: 100%;
+        align-items: center;
       }
-      #cta h2::after {
-        content: "";
-        display: block;
-        width: clamp(62px, 8vw, 110px);
-        height: 6px;
-        border-radius: 99px;
-        margin-top: 22px;
-        background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      }
-      #cta .sub {
-        color: var(--ink-dim);
-        max-width: 50ch;
-        margin-top: 24px;
-        font-size: 15.5px;
-      }
-      #cta .cta-row {
-        margin-top: 40px;
+      .cta-grid {
         display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
+        justify-content: center;
       }
-      #copy-email {
-        position: relative;
+      .contact-card {
+        width: 100%;
+        border-radius: var(--radius);
+        padding: clamp(24px, 3vw, 36px);
       }
-      #copy-email .copied {
-        position: absolute;
-        top: -34px;
-        left: 50%;
-        transform: translateX(-50%) translateY(6px);
+      .contact-card .field {
+        margin-bottom: 20px;
+      }
+      .contact-card label {
+        display: block;
         font-size: 11px;
-        letter-spacing: 0.14em;
+        font-weight: 600;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: var(--ink);
-        opacity: 0;
-        transition:
-          opacity 0.3s,
-          transform 0.3s;
-        pointer-events: none;
+        color: var(--ink-faint);
+        margin-bottom: 9px;
       }
-      #copy-email.show .copied {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
+      .contact-card input,
+      .contact-card textarea {
+        width: 100%;
+        font-family: var(--font-body);
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.44);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        transition:
+          border-color var(--motion-fast) ease,
+          background var(--motion-base) var(--ease-out),
+          box-shadow var(--motion-base) var(--ease-out);
+      }
+      .contact-card textarea {
+        resize: vertical;
+        min-height: 140px;
+      }
+      .contact-card input::placeholder,
+      .contact-card textarea::placeholder {
+        color: var(--ink-faint);
+        opacity: 0.75;
+      }
+      .contact-card input:focus,
+      .contact-card textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        background: rgba(255, 255, 255, 0.68);
+        /* ring strength matches the global :focus-visible outline (0.38 amber) */
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.7),
+          0 0 0 3px rgba(var(--logo-glow), 0.35);
+      }
+      .cf-foot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      /* status line speaks in the site's deploy-log voice (same mono as .mock) */
+      .cf-status {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11.5px;
+        letter-spacing: 0.03em;
+        color: var(--ink-faint);
+        min-height: 1em;
+      }
+      .cf-status.ok {
+        color: var(--ink);
+      }
+      .cf-status.err {
+        /* functional text — amber small type fails contrast on the light glass */
+        color: var(--ink);
+        font-weight: 600;
+      }
+      /* parity with the sec-ink dark-glass card variant (class is body-wide
+         while the #how band is active, even though #cta sits outside it) */
+      body.sec-ink .contact-card input,
+      body.sec-ink .contact-card textarea {
+        background: rgba(255, 255, 255, 0.07);
+        box-shadow: none;
+      }
+      /* the rule above outweighs .contact-card input:focus — restore the ring */
+      body.sec-ink .contact-card input:focus,
+      body.sec-ink .contact-card textarea:focus {
+        box-shadow: 0 0 0 3px rgba(var(--logo-glow), 0.35);
       }
 
       /* ── footer — full-width band, content at main-content width ── */
@@ -1643,7 +1696,7 @@
       }
       .foot-grid {
         display: flex;
-        justify-content: space-between;
+        justify-content: space-around;
         gap: 40px;
         flex-wrap: wrap;
         margin-bottom: 56px;
@@ -1674,6 +1727,23 @@
       }
       .foot-col a:hover {
         color: var(--ink);
+      }
+      .foot-social-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .foot-social-row a {
+        display: inline-flex;
+        margin-bottom: 0;
+        color: var(--ink-dim);
+      }
+      .foot-social-row a:hover {
+        color: var(--ink);
+      }
+      .foot-social-row .ic {
+        width: 19px;
+        height: 19px;
       }
       .foot-base {
         display: flex;

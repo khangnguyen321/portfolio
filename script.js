@@ -511,44 +511,51 @@
       window.addEventListener("resize", requestScrollMotion, { passive: true });
       updateScrollMotion();
 
-      /* ═══ COPY EMAIL ═══ */
-      document
-        .getElementById("copy-email")
-        .addEventListener("click", function () {
-          const btn = this;
-          const text = "hk.nguyen91@gmail.com";
-          const status = btn.querySelector(".copied");
-          function flash(message) {
-            status.textContent = message;
-            btn.classList.add("show");
-            setTimeout(() => btn.classList.remove("show"), 1600);
+      /* ═══ CONTACT FORM ═══
+   No backend by design (static site, no secrets in the repo): Send composes a
+   prefilled email in the visitor's own mail client via mailto:. The status
+   line reports in the site's deploy-log voice. */
+      (function () {
+        const form = document.getElementById("contact-form");
+        if (!form) return;
+        const nameEl = document.getElementById("cf-name");
+        const msgEl = document.getElementById("cf-msg");
+        const status = form.querySelector(".cf-status");
+        let resetTimer = 0;
+        function say(text, cls) {
+          status.textContent = text;
+          status.className = "cf-status" + (cls ? " " + cls : "");
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => {
+            status.textContent = "";
+            status.className = "cf-status";
+          }, 7000);
+        }
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const name = nameEl.value.trim();
+          const msg = msgEl.value.trim();
+          if (!name) {
+            say("► name required", "err");
+            nameEl.focus();
+            return;
           }
-          function legacyCopy() {
-            const input = document.createElement("textarea");
-            input.value = text;
-            input.setAttribute("readonly", "");
-            input.style.position = "fixed";
-            input.style.opacity = "0";
-            document.body.appendChild(input);
-            input.select();
-            let copied = false;
-            try {
-              copied = document.execCommand("copy");
-            } catch (_) {
-              copied = false;
-            }
-            input.remove();
-            flash(copied ? "Copied ✓" : "Copy failed");
+          if (!msg) {
+            say("► message required", "err");
+            msgEl.focus();
+            return;
           }
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard
-              .writeText(text)
-              .then(() => flash("Copied ✓"))
-              .catch(legacyCopy);
-          } else {
-            legacyCopy();
-          }
+          const subject = "Portfolio contact — " + name;
+          /* RFC 6068: mailto body line breaks are %0D%0A */
+          const body = msg + "\r\n\r\n— " + name;
+          window.location.href =
+            "mailto:hk.nguyen91@gmail.com?subject=" +
+            encodeURIComponent(subject) +
+            "&body=" +
+            encodeURIComponent(body);
+          say("✓ draft opened — hit send in your mail app", "ok");
         });
+      })();
 
       /* ═══ SCROLL REVEALS ═══ */
       const revealEls = Array.from(document.querySelectorAll(".reveal"));
