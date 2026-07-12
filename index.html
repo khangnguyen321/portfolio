@@ -1219,9 +1219,13 @@
         opacity: 0.18;
       }
 
-      /* ── steps · #how is the page's one full-dark moment: a rounded ink band framed by a
-      sliver of --bg, fully covering the object as it crosses back to center behind it.
-      Interior mirrors the .mock dark palette — no new colors, zero amber inside. ── */
+      /* ── steps · #how hosts the page's one full-dark moment — but the dark is the
+      WEBGL BACKDROP (keyframes lerp bg to #22262A between av-guard anchors above
+      #how / #experience), not a section background. The DOM side is body.sec-ink,
+      toggled with ±48px hysteresis by updateScrollMotion() at the ramp midpoints.
+      The canvas is ONE global color, so the flip re-tokens every .grid-sec —
+      neighboring sections' sticky kickers and tails cross the band during the
+      ramps — while the fixed header/footer keep their light glass. ── */
       #how {
         background: transparent;
         border-top: 1px solid var(--line-soft);
@@ -1237,6 +1241,37 @@
       }
       #how h2.display {
         color: var(--ink);
+      }
+      body.sec-ink section.grid-sec {
+        --ink: #eceff1;
+        --ink-dim: #b7bec3;
+        --ink-faint: #8b9398;
+        --accent-2: #e3e7ea;
+        --line: rgba(255, 255, 255, 0.18);
+        --line-soft: rgba(255, 255, 255, 0.13);
+      }
+      body.sec-ink section.grid-sec .eyebrow {
+        /* neighbors' kickers dim on ink; #how's own stays token-bright via its
+           more specific rule above — deliberate active-section hierarchy */
+        color: #9ba3a8;
+      }
+      /* white-glass cards do NOT survive on ink (interior text drops to ~2:1) —
+         dark-glass variant; backdrop-filter stays and frosts the light pool */
+      body.sec-ink .svc,
+      body.sec-ink .wcard,
+      body.sec-ink .appr-row .vis,
+      body.sec-ink .step,
+      body.sec-ink .xp {
+        background: linear-gradient(
+          135deg,
+          rgba(23, 26, 28, 0.55),
+          rgba(23, 26, 28, 0.28) 48%,
+          rgba(23, 26, 28, 0.44)
+        );
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          0 18px 42px rgba(0, 0, 0, 0.35);
       }
       .steps {
         display: grid;
@@ -2550,20 +2585,33 @@
         CTA_GLINT_TRIM_DEG: 0 /* additive yaw trim at K7 to land the amber glint */,
         /* — choreography — */
         /* per-keyframe channels beyond x/y/s/t/o:
-       p/r = pitch/roll viewpoint offsets (deg) — object-space rotation, reads as a
-             per-section camera-orbit change without touching the placement math
-       f   = camera FOV (deg) — zoom/dolly feel; placement math self-compensates
-       lk  = light-rig intensity multiplier (key/fill/ambient)
-       w   = warmth 0→1 — amber rim boost + used only near #cta (the glint moment)
-       bg  = backdrop plane color (graphite family, ≤~4% lightness deltas so panel
-             edges don't seam against the static CSS --bg) — K0 bg MUST equal --bg */
+       p/r  = pitch/roll viewpoint offsets (deg) — object-space rotation, reads as a
+              per-section camera-orbit change without touching the placement math
+       f    = camera FOV (deg) — zoom/dolly feel; placement math self-compensates
+       lk   = light-rig intensity multiplier (key/fill/ambient)
+       w    = warmth 0→1 — amber rim boost + light-pool tint; peaks at #cta (glint)
+       bg   = backdrop plane color. Light-graphite family (≤~4% lightness deltas so
+              panel edges don't seam against the static CSS --bg) EXCEPT the guarded
+              #how ink band (#22262A): its ramps are compressed into inter-section
+              padding by av-guard keyframes and the DOM flips body.sec-ink in sync
+              (see updateScrollMotion). K0 bg MUST equal --bg.
+       pl   = light-pool strength 0→1 — backdrop brightens in a soft plateau pool
+              under the object (tint = white→amber by w)
+       form = ring formation preset name (FORMATIONS table); resolved at boot to
+              formR, per-ring params interpolate numerically between keyframes
+       av   = per-keyframe ANCHOR_VH override — guard keyframes use it to pin color
+              ramps inside inter-section padding (dark never under readable copy) */
         KEYFRAMES: [
           /* anchor '' = scroll 0; y>100 exits below.
              Authored path: hero (vertical center, right of the left-aligned copy)
-             → ZOOM IN at #statement → LEFT phase (#build, #work) → RIGHT phase
-             (#approach, #how, #experience) → pull back at #cta → ZOOM OUT at footer */
+             → ZOOM IN at #statement → LEFT phase (#build orbit, #work gyro) →
+             RIGHT phase (#approach disc → #how LADDER inside the guarded ink band
+             → #experience disc) → nest + amber warmth at #cta → ZOOM OUT at footer.
+             Formation adjacency chain nest·nest·orbit·gyro·disc·ladder·ladder·
+             disc·disc·nest·nest satisfies safety rules R1/R3 (see FORMATIONS). */
           {
             a: "",
+            form: "nest",
             x: 70,
             y: 50,
             s: 84,
@@ -2574,10 +2622,12 @@
             f: 34,
             lk: 1.0,
             w: 0,
+            pl: 0.1,
             bg: "#E8EDEF",
           },
           {
             a: "#statement",
+            form: "nest",
             x: 62,
             y: 50,
             s: 132,
@@ -2588,13 +2638,16 @@
             f: 28,
             lk: 0.92,
             w: 0,
-            bg: "#E8EDEF",
+            pl: 0.14,
+            bg: "#E4E9EC",
           },
           {
             a: "#build",
+            form: "orbit",
+            /* s compensates orbit's ×1.58 footprint vs the fixed BASE_DIAM */
             x: 20,
             y: 50,
-            s: 76,
+            s: 52,
             t: 0.64,
             o: 1.0,
             p: 22,
@@ -2602,10 +2655,12 @@
             f: 34,
             lk: 1.05,
             w: 0,
-            bg: "#E8EDEF",
+            pl: 0.16,
+            bg: "#DFE5E4",
           },
           {
             a: "#work",
+            form: "gyro",
             x: 22,
             y: 48,
             s: 64,
@@ -2616,13 +2671,15 @@
             f: 32,
             lk: 0.88,
             w: 0,
-            bg: "#E8EDEF",
+            pl: 0.18,
+            bg: "#D9DEE0",
           },
           {
             a: "#approach",
+            form: "disc",
             x: 80,
             y: 50,
-            s: 72,
+            s: 70,
             t: 1.42,
             o: 0.86,
             p: 26,
@@ -2630,24 +2687,70 @@
             f: 33,
             lk: 0.95,
             w: 0,
-            bg: "#E8EDEF",
+            pl: 0.14,
+            bg: "#E2E6E3",
           },
           {
+            /* ink-band GUARD IN: still light at 1.15vh above #how — the dark ramp
+               lives entirely in the #approach→#how padding corridor */
             a: "#how",
+            av: 1.15,
+            form: "ladder",
             x: 78,
             y: 52,
-            s: 82,
-            t: 1.78,
+            s: 90,
+            t: 1.7,
             o: 1.0,
-            p: -14,
-            r: 20,
-            f: 30,
-            lk: 1.08,
+            p: -6,
+            r: 10,
+            f: 31,
+            lk: 1.0,
             w: 0,
-            bg: "#E8EDEF",
+            pl: 0.2,
+            bg: "#DDE2E2",
           },
           {
+            /* the INK moment: ladder stack over deep graphite, brightest pool;
+               lk 1.18 keeps the object luminous against the dark band */
+            a: "#how",
+            av: 0.35,
+            form: "ladder",
+            x: 78,
+            y: 52,
+            s: 96,
+            t: 1.82,
+            o: 1.0,
+            p: -6,
+            r: 8,
+            f: 30,
+            lk: 1.18,
+            w: 0,
+            pl: 0.3,
+            bg: "#22262A",
+          },
+          {
+            /* dark HOLD through the #how→#experience padding, rings re-coalesce */
             a: "#experience",
+            av: 1.15,
+            form: "disc",
+            x: 74,
+            y: 55,
+            s: 70,
+            t: 2.02,
+            o: 0.9,
+            p: 10,
+            r: -4,
+            f: 34,
+            lk: 1.12,
+            w: 0,
+            pl: 0.26,
+            bg: "#22262A",
+          },
+          {
+            /* GUARD OUT: back to light before #experience copy is readable */
+            a: "#experience",
+            av: 0.6,
+            form: "disc",
             x: 74,
             y: 55,
             s: 62,
@@ -2658,10 +2761,13 @@
             f: 36,
             lk: 0.85,
             w: 0,
-            bg: "#E8EDEF",
+            pl: 0.14,
+            bg: "#E6E9E4",
           },
           {
             a: "#cta",
+            form: "nest",
+            /* warm paper + w 1.0: the pool ambers itself via the tint coupling */
             x: 64,
             y: 50,
             s: 72,
@@ -2672,10 +2778,12 @@
             f: 33,
             lk: 1.02,
             w: 1.0,
-            bg: "#E8EDEF",
+            pl: 0.22,
+            bg: "#EDEBE2",
           },
           {
             a: "footer",
+            form: "nest",
             x: 50,
             y: 54,
             s: 38,
@@ -2686,6 +2794,7 @@
             f: 40,
             lk: 0.95,
             w: 0.3,
+            pl: 0.1,
             bg: "#E8EDEF",
           },
         ],
@@ -2878,6 +2987,15 @@
           section: document.querySelector(link.getAttribute("href")),
         }))
         .filter((item) => item.section);
+      /* sec-ink: DOM side of the #how ink band. Thresholds are the MIDPOINTS of the
+         WebGL bg ramps authored on the av-guard keyframes — in: (1.15+0.35)/2 = 0.75
+         above #how; out: (1.15+0.60)/2 = 0.875 above #experience — so the class
+         flips inside inter-section padding while cur.bg lerps around it. Keep these
+         coupled to the keyframe av values in OBJ_CFG. */
+      const inkHowEl = document.getElementById("how");
+      const inkExpEl = document.getElementById("experience");
+      const INK_HYST = 48; /* px — scroll jitter can't strobe the page */
+      let inkOn = false;
       let scrollTicking = false;
       function updateScrollMotion() {
         const maxScroll = Math.max(
@@ -2911,6 +3029,17 @@
           if (isActive) item.link.setAttribute("aria-current", "location");
           else item.link.removeAttribute("aria-current");
         });
+        if (inkHowEl && inkExpEl) {
+          const inkIn = inkHowEl.offsetTop - 0.75 * innerHeight;
+          const inkOut = inkExpEl.offsetTop - 0.875 * innerHeight;
+          const on = inkOn
+            ? scrollY > inkIn - INK_HYST && scrollY < inkOut + INK_HYST
+            : scrollY > inkIn + INK_HYST && scrollY < inkOut - INK_HYST;
+          if (on !== inkOn) {
+            inkOn = on;
+            document.body.classList.toggle("sec-ink", inkOn);
+          }
+        }
         scrollTicking = false;
       }
       function requestScrollMotion() {
