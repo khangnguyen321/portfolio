@@ -384,6 +384,13 @@
         position: relative;
         z-index: 2;
         isolation: isolate;
+        /* every section stages at least one full viewport (svh where supported);
+           short sections center their content, tall ones (#work, #approach) just
+           exceed the minimum and scroll normally */
+        min-height: 100vh;
+        min-height: 100svh;
+        display: grid;
+        align-content: center;
       }
       section.grid-sec + section.grid-sec {
         border-top: 1px solid var(--line-soft);
@@ -397,6 +404,7 @@
       }
       .btn:focus-visible,
       nav.links a:focus-visible,
+      .rail a:focus-visible,
       .text-link:focus-visible,
       .foot-col a:focus-visible,
       .foot-base a:focus-visible {
@@ -447,6 +455,85 @@
         height: 2px;
         background: linear-gradient(90deg, var(--accent), transparent);
         align-self: center;
+      }
+      .eyebrow .idx {
+        font-style: normal;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        font-variant-numeric: tabular-nums;
+      }
+      /* ── section-index rail: fixed right edge, ticks + numbers; active section
+         gets an elongated amber tick. Driven by updateScrollMotion(). ── */
+      .rail {
+        position: fixed;
+        right: clamp(14px, 2vw, 28px);
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 150;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+      }
+      .rail a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+        text-decoration: none;
+        color: var(--ink-faint);
+      }
+      .rail a i {
+        font-style: normal;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        font-variant-numeric: tabular-nums;
+        opacity: 0;
+        transform: translateX(4px);
+        transition:
+          opacity var(--motion-base) var(--ease-out),
+          transform var(--motion-base) var(--ease-out),
+          color var(--motion-base) var(--ease-out);
+      }
+      .rail a span {
+        /* full section name for assistive tech only */
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      .rail a::after {
+        content: "";
+        width: 18px;
+        height: 2px;
+        background: currentColor;
+        opacity: 0.5;
+        transition:
+          width var(--motion-base) var(--ease-out),
+          opacity var(--motion-base) var(--ease-out),
+          background-color var(--motion-base) var(--ease-out);
+      }
+      .rail a:hover i {
+        opacity: 1;
+        transform: none;
+      }
+      .rail a:hover::after {
+        opacity: 0.9;
+      }
+      .rail a.active {
+        color: var(--accent-2);
+      }
+      .rail a.active i {
+        opacity: 1;
+        transform: none;
+      }
+      .rail a.active::after {
+        width: 34px;
+        opacity: 1;
+        background: var(--accent);
       }
       .content {
         min-width: 0;
@@ -1573,6 +1660,9 @@
         nav.links {
           display: none;
         }
+        .rail {
+          display: none;
+        }
         .wrap {
           grid-template-columns: 1fr;
           gap: 26px;
@@ -1677,6 +1767,20 @@
       >
     </header>
 
+    <!-- fixed section-index rail — active state driven by the same rAF scrollspy
+         that powers the nav links (updateScrollMotion). Hidden ≤920px. -->
+    <nav class="rail" aria-label="Sections">
+      <a href="#statement" data-sec="statement"><i>01</i><span>About</span></a>
+      <a href="#build" data-sec="build"><i>02</i><span>What I build</span></a>
+      <a href="#work" data-sec="work"><i>03</i><span>Selected work</span></a>
+      <a href="#approach" data-sec="approach"><i>04</i><span>My approach</span></a>
+      <a href="#how" data-sec="how"><i>05</i><span>How it works</span></a>
+      <a href="#experience" data-sec="experience"
+        ><i>06</i><span>Experience</span></a
+      >
+      <a href="#cta" data-sec="cta"><i>07</i><span>Contact</span></a>
+    </nav>
+
     <!-- ═══ HERO — full width ═══ -->
     <section id="hero">
       <!-- no-WebGL / no-JS fallback: blueprint line drawing of the object (two ring
@@ -1754,7 +1858,7 @@
     <!-- ═══ STATEMENT ═══ -->
     <section class="grid-sec" id="statement">
       <div class="wrap">
-        <div class="eyebrow reveal">About</div>
+        <div class="eyebrow reveal"><i class="idx">01</i>About</div>
         <div class="content">
           <h2 class="reveal">
             I lead facility projects at UPS by day and build the software that
@@ -1772,7 +1876,7 @@
     <!-- ═══ WHAT I BUILD ═══ -->
     <section class="grid-sec" id="build">
       <div class="wrap">
-        <div class="eyebrow reveal">What I build</div>
+        <div class="eyebrow reveal"><i class="idx">02</i>What I build</div>
         <div class="content">
           <div class="svc-head">
             <h2 class="display reveal">
@@ -1846,7 +1950,7 @@
     <!-- ═══ WORK ═══ -->
     <section class="grid-sec" id="work">
       <div class="wrap">
-        <div class="eyebrow reveal">Selected work</div>
+        <div class="eyebrow reveal"><i class="idx">03</i>Selected work</div>
         <div class="content">
           <h2 class="display reveal">Case Studies.</h2>
           <p class="lede reveal" style="margin-top: 20px">
@@ -2085,7 +2189,7 @@
     <!-- ═══ APPROACH ═══ -->
     <section class="grid-sec" id="approach">
       <div class="wrap">
-        <div class="eyebrow reveal">My approach</div>
+        <div class="eyebrow reveal"><i class="idx">04</i>My approach</div>
         <div class="content">
           <h2 class="display reveal">Where Operations Meet Velocity.</h2>
 
@@ -2187,7 +2291,7 @@
     <!-- ═══ HOW IT WORKS ═══ -->
     <section class="grid-sec" id="how">
       <div class="wrap">
-        <div class="eyebrow reveal">How it works</div>
+        <div class="eyebrow reveal"><i class="idx">05</i>How it works</div>
         <div class="content">
           <h2 class="display reveal">
             From Operational Problem to Running System.
@@ -2268,7 +2372,7 @@
     <!-- ═══ EXPERIENCE ═══ -->
     <section class="grid-sec" id="experience">
       <div class="wrap">
-        <div class="eyebrow reveal">Experience</div>
+        <div class="eyebrow reveal"><i class="idx">06</i>Experience</div>
         <div class="content">
           <h2 class="display reveal">
             A Decade Across Engineering, Code & Design.
@@ -2347,7 +2451,7 @@
     <!-- ═══ CTA ═══ -->
     <section class="grid-sec" id="cta">
       <div class="wrap">
-        <div class="eyebrow reveal">Contact</div>
+        <div class="eyebrow reveal"><i class="idx">07</i>Contact</div>
         <div class="content">
           <h2 class="reveal">Ready to automate the busywork?</h2>
           <p class="sub reveal">
@@ -2709,6 +2813,12 @@
           section: document.querySelector(link.getAttribute("href")),
         }))
         .filter((item) => item.section);
+      const railLinks = Array.from(document.querySelectorAll(".rail a"))
+        .map((link) => ({
+          link,
+          section: document.querySelector(link.getAttribute("href")),
+        }))
+        .filter((item) => item.section);
       let scrollTicking = false;
       function updateScrollMotion() {
         const maxScroll = Math.max(
@@ -2728,6 +2838,16 @@
         });
         navSections.forEach((item) => {
           const isActive = item === active;
+          item.link.classList.toggle("active", isActive);
+          if (isActive) item.link.setAttribute("aria-current", "location");
+          else item.link.removeAttribute("aria-current");
+        });
+        let railActive = null;
+        railLinks.forEach((item) => {
+          if (item.section.offsetTop <= marker) railActive = item;
+        });
+        railLinks.forEach((item) => {
+          const isActive = item === railActive;
           item.link.classList.toggle("active", isActive);
           if (isActive) item.link.setAttribute("aria-current", "location");
           else item.link.removeAttribute("aria-current");
@@ -3387,6 +3507,7 @@
             const grain = (hashMineral(i) - 0.5) * 0.055;
             const displacement = 1 + strata + fracture + grain;
             position.setXYZ(
+              i,
               vertex.x * displacement * 1.46,
               vertex.y * displacement * 0.7,
               vertex.z * displacement * 1.02,
@@ -5084,8 +5205,6 @@
             });
             const coreTexture = coreImageMaterial.uniforms.coreMap.value;
             if (coreTexture) coreTexture.dispose();
-            const coreBaseTexture = coreBaseMaterial.uniforms.coreMap.value;
-            if (coreBaseTexture) coreBaseTexture.dispose();
             coreVideo.pause();
             coreVideo.removeAttribute("src");
             coreVideo.load();
