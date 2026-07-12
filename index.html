@@ -2411,24 +2411,33 @@
    (SVG fallback stays visible). Motion and scroll response remain active otherwise. */
       const OBJ_CFG = {
         /* — object — */
-        RING_TILTS_DEG: [8, 28, 58],
-        RING_YAW_OFFSET_DEG: 22,
-        RING_RADII: [1.5, 1.92, 2.3],
-        RING_TUBE: [0.115, 0.105, 0.085],
-        RING_BAND_WIDTH: [0.24, 0.32, 0.22],
-        RING_BAND_DEPTH: [0.12, 0.145, 0.11],
-        RING_ASPECT_Y: [0.72, 0.82, 0.68],
-        RING_WOBBLE: [0.032, 0.024, 0.04],
-        HERO_POSE: { x: 70, y: 58, s: 84 },
+        /* 4 tall thin "tape band" rings (BAND_DEPTH = axial height 0.30, BAND_WIDTH
+           = radial thickness 0.06) nested as disjoint spherical shells. A tumbling
+           ring sweeps distances [R−w/2, sqrt((R+w/2)²+(d/2)²)] ≈ [R−0.03, R+0.037];
+           the 0.10 radius steps keep every adjacent pair clear at EVERY orientation
+           — the rings can never touch or pass through each other — while the whole
+           nest hugs the island (silhouette radius ≈1.5). */
+        RING_TILTS_DEG: [10, 40, 70, 100],
+        RING_YAW_OFFSET_DEG: 45,
+        RING_RADII: [1.6, 1.7, 1.8, 1.9],
+        RING_TUBE: [0.105, 0.105, 0.105, 0.105],
+        RING_BAND_WIDTH: [0.06, 0.06, 0.06, 0.06],
+        RING_BAND_DEPTH: [0.3, 0.3, 0.3, 0.3],
+        RING_ASPECT_Y: [1, 1, 1, 1] /* 1 = true circles (values <1 squash vertically) */,
+        RING_WOBBLE: [0, 0, 0, 0] /* 0 = perfectly round bands, no radial warble */,
+        HERO_POSE: { x: 70, y: 50, s: 84 },
         ROCK_COLOR: "#343830",
         ROCK_SHADE_DARK: "#171a18",
         ROCK_SHADE_LIGHT: "#77796a",
         ROCK_ROUGH: 0.92,
         ROCK_METAL: 0.02,
-        GLASS_ROUGH: 0.055,
+        GLASS_ROUGH: 0.03 /* polished clear-water read; seasons modulate at runtime */,
         GLASS_IOR: 1.47,
         GLASS_TINT: "#F4FAFC",
-        DISPERSION: 0.16 /* subtle optical separation; never a rainbow coating */,
+        DISPERSION: 0.24 /* visible prismatic edges on the ribbons, per reference */,
+        /* — seasons — */
+        SEASON_S: 14 /* seconds per season; 4 seasons = one 56s loop */,
+        SEASON_FADE_S: 3 /* crossfade window at each season boundary */,
         /* — light — */
         KEY_INT: 1.0,
         FILL_INT: 0.3,
@@ -2445,11 +2454,14 @@
        bg  = backdrop plane color (graphite family, ≤~4% lightness deltas so panel
              edges don't seam against the static CSS --bg) — K0 bg MUST equal --bg */
         KEYFRAMES: [
-          /* anchor '' = scroll 0; y>100 exits below */
+          /* anchor '' = scroll 0; y>100 exits below.
+             Authored path: hero (vertical center, right of the left-aligned copy)
+             → ZOOM IN at #statement → LEFT phase (#build, #work) → RIGHT phase
+             (#approach, #how, #experience) → pull back at #cta → ZOOM OUT at footer */
           {
             a: "",
             x: 70,
-            y: 58,
+            y: 50,
             s: 84,
             t: 0.0,
             o: 1.0,
@@ -2462,36 +2474,36 @@
           },
           {
             a: "#statement",
-            x: 68,
-            y: 48,
-            s: 118,
+            x: 62,
+            y: 50,
+            s: 132,
             t: 0.2,
             o: 0.9,
             p: -18,
             r: 9,
-            f: 29,
+            f: 28,
             lk: 0.92,
             w: 0,
             bg: "#E8EDEF",
           },
           {
             a: "#build",
-            x: 18,
-            y: 55,
-            s: 52,
+            x: 20,
+            y: 50,
+            s: 76,
             t: 0.64,
             o: 1.0,
             p: 22,
             r: -12,
-            f: 38,
+            f: 34,
             lk: 1.05,
             w: 0,
             bg: "#E8EDEF",
           },
           {
             a: "#work",
-            x: 82,
-            y: 45,
+            x: 22,
+            y: 48,
             s: 64,
             t: 1.05,
             o: 0.88,
@@ -2504,21 +2516,21 @@
           },
           {
             a: "#approach",
-            x: 16,
-            y: 52,
-            s: 58,
+            x: 80,
+            y: 50,
+            s: 72,
             t: 1.42,
             o: 0.86,
             p: 26,
             r: -18,
-            f: 40,
+            f: 33,
             lk: 0.95,
             w: 0,
             bg: "#E8EDEF",
           },
           {
             a: "#how",
-            x: 77,
+            x: 78,
             y: 52,
             s: 82,
             t: 1.78,
@@ -2532,9 +2544,9 @@
           },
           {
             a: "#experience",
-            x: 24,
-            y: 82,
-            s: 44,
+            x: 74,
+            y: 55,
+            s: 62,
             t: 2.12,
             o: 0.78,
             p: 32,
@@ -2546,14 +2558,14 @@
           },
           {
             a: "#cta",
-            x: 72,
+            x: 64,
             y: 50,
-            s: 92,
+            s: 72,
             t: 2.45,
             o: 1.0,
             p: -20,
             r: 14,
-            f: 31,
+            f: 33,
             lk: 1.02,
             w: 1.0,
             bg: "#E8EDEF",
@@ -2561,13 +2573,13 @@
           {
             a: "footer",
             x: 50,
-            y: 70,
-            s: 55,
+            y: 54,
+            s: 38,
             t: 2.72,
-            o: 0.82,
+            o: 0.85,
             p: 0,
             r: 0,
-            f: 34,
+            f: 40,
             lk: 0.95,
             w: 0.3,
             bg: "#E8EDEF",
@@ -2584,21 +2596,37 @@
        ring phase lock. RING_LOOP_ON is the runtime kill switch — every branch that
        must let the loop park sets it false. — */
         RING_LOOP: [
+          /* each ring's spin AXIS itself precesses slowly around PRECESS_AXIS —
+             the tumble direction keeps changing (never just forward/backward),
+             while both angles accumulate incrementally so kills still freeze */
           {
-            PERIOD_S: 34,
+            PERIOD_S: 24,
             AXIS: [0.94, 0.33, 0],
             PHASE: 0,
+            PRECESS_S: 68,
+            PRECESS_AXIS: [0, 1, 0],
           } /* ring A: clearly visible rotation */,
           {
-            PERIOD_S: -42,
+            PERIOD_S: -31,
             AXIS: [0, 0.29, 0.96],
             PHASE: 18,
+            PRECESS_S: -56,
+            PRECESS_AXIS: [1, 0, 0.2],
           } /* ring B: faster counter-rotation */,
           {
-            PERIOD_S: 48,
+            PERIOD_S: 35,
             AXIS: [0.38, 0.86, 0.34],
             PHASE: -12,
-          } /* ring C: wide, slower outer orbit */,
+            PRECESS_S: 90,
+            PRECESS_AXIS: [0.2, 0, 1],
+          } /* ring C: oblique orbit */,
+          {
+            PERIOD_S: -41,
+            AXIS: [0.6, -0.52, 0.61],
+            PHASE: 42,
+            PRECESS_S: -76,
+            PRECESS_AXIS: [0.7, 0.7, 0],
+          } /* ring D: diagonal counter-tumble */,
         ],
         RING_LOOP_ON: true,
         WARM_RIM_MULT: 3.0 /* rim intensity multiplier at w=1 (K7 amber moment) */,
@@ -3062,6 +3090,10 @@
         const mechanicalCoreGroup = new THREE.Group();
         object.add(orientationGroup);
         orientationGroup.add(outerRingsGroup, mechanicalCoreGroup);
+        /* the island billboard renders at (0,-0.48,0.03) — park the whole ring/core
+           system on that same center so the rings visibly SURROUND the island and
+           pitch/roll pivot around it, not around a point above it */
+        orientationGroup.position.set(0, -0.48, 0.03);
 
         /* Architectural annular band with broad planar faces, straight inner/outer walls,
            and four tiny chamfers. This avoids the inflated profile of TorusGeometry. */
@@ -3126,26 +3158,43 @@
           return geometry;
         }
 
-        const glassEdgeTints = ["#A9D6E5", "#C7CEDA", "#D2DCE4"];
+        /* alternating finish — even rings: shining clear glass (transmission);
+           odd rings: polished chrome. Chrome is OPAQUE, so it joins the
+           transmission buffer and the glass rings visibly refract it: the two
+           finishes read as one mixed material system. Color story on the glass
+           still comes from the core-reflect light + dispersion, not a body tint. */
+        const glassEdgeTints = ["#DCE9EF", "#E3E6EC", "#E8ECEC", "#DFE8EE"];
         const glassMats = cfg.RING_RADII.map((_, i) =>
-          new THREE.MeshPhysicalMaterial({
-            color: "#DDE7EC",
-            metalness: 0,
-            roughness: cfg.GLASS_ROUGH + i * 0.006,
-            transmission: useTransmission ? 1 : 0,
-            transparent: true,
-            opacity: useTransmission ? 1 : 0.48,
-            ior: cfg.GLASS_IOR,
-            thickness: 0.42 + i * 0.045,
-            clearcoat: 1,
-            clearcoatRoughness: 0.022,
-            envMapIntensity: 1.45 + i * 0.14,
-            attenuationColor: glassEdgeTints[i],
-            attenuationDistance: 1.8,
-            dispersion: useTransmission ? cfg.DISPERSION : 0,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-          }),
+          i % 2
+            ? new THREE.MeshPhysicalMaterial({
+                color: "#F2F5F7",
+                metalness: 1,
+                /* brushed-soft blur so face-on ribbons average the env into
+                   silver instead of mirroring one dark strip as a black band;
+                   the sharp clearcoat keeps the "shining" highlights */
+                roughness: 0.16,
+                clearcoat: 1,
+                clearcoatRoughness: 0.03,
+                envMapIntensity: 2.1,
+              })
+            : new THREE.MeshPhysicalMaterial({
+                color: "#EDF2F4",
+                metalness: 0,
+                roughness: cfg.GLASS_ROUGH + i * 0.006,
+                transmission: useTransmission ? 1 : 0,
+                transparent: true,
+                opacity: useTransmission ? 1 : 0.48,
+                ior: cfg.GLASS_IOR,
+                thickness: 0.55 + i * 0.05,
+                clearcoat: 1,
+                clearcoatRoughness: 0.008 /* tighter coat = wetter, shinier highlights */,
+                envMapIntensity: 1.75 + i * 0.14,
+                attenuationColor: glassEdgeTints[i],
+                attenuationDistance: 2.6,
+                dispersion: useTransmission ? cfg.DISPERSION : 0,
+                side: THREE.DoubleSide,
+                depthWrite: false,
+              }),
         );
 
         const rings = cfg.RING_RADII.map((radius, i) => {
@@ -3163,22 +3212,11 @@
           ring.rotation.set(
             Math.PI / 2 - tilt,
             THREE.MathUtils.degToRad(i * cfg.RING_YAW_OFFSET_DEG),
-            THREE.MathUtils.degToRad(i === 1 ? 8 : -5),
+            THREE.MathUtils.degToRad([-5, 8, -4, 6][i] || 0),
           );
           ring.renderOrder = 10 + i;
-          const edge = new THREE.LineSegments(
-            new THREE.EdgesGeometry(geometry, 20),
-            new THREE.LineBasicMaterial({
-              color: glassEdgeTints[i],
-              transparent: true,
-              opacity: 0.26,
-              blending: THREE.AdditiveBlending,
-              depthWrite: false,
-              toneMapped: false,
-            }),
-          );
-          edge.renderOrder = 20 + i;
-          ring.add(edge);
+          /* no wireframe edge overlay — the reference glass is clean; edge sparkle
+             comes from the chamfers catching the env map and the dispersion */
           outerRingsGroup.add(ring);
           return ring;
         });
@@ -3186,8 +3224,20 @@
         const ringAxes = cfg.RING_LOOP.map((loop) =>
           new THREE.Vector3(...loop.AXIS).normalize(),
         );
+        const ringPrecAxes = cfg.RING_LOOP.map((loop) =>
+          new THREE.Vector3(...(loop.PRECESS_AXIS || [0, 1, 0])).normalize(),
+        );
+        const ringSpinAxis = new THREE.Vector3();
         const ringQ = new THREE.Quaternion();
+        const precQ = new THREE.Quaternion();
         const coreLayerQ = new THREE.Quaternion();
+
+        /* the core's palette reaches the rings as LIGHT, not a material tint: a
+           point light parked at the island center colors only the glass surfaces
+           rotating past it — a localized moving glint, never the whole ring */
+        const coreReflectLight = new THREE.PointLight(0xffffff, 0, 6.5, 1.7);
+        coreReflectLight.position.set(0, 0, 0.55);
+        orientationGroup.add(coreReflectLight);
 
         /* Precision spherical cage: three graphite great-circle ribs create six large
            openings, with polished portal lips clarifying the cut-through silhouette. */
@@ -3410,14 +3460,17 @@
         /* Final animated island: coreRings.mp4 is decoded normally but sampled into a
            1024px canvas at 18fps. This preserves the six-second loop duration while
            giving the texture a deliberate cinematic cadence and bounded GPU uploads. */
-        const createCoreKeyMaterial = (keyValue, keyEnabled = 1) =>
+        /* keyColor = the clip's measured backdrop plate, #F5F4F6 ≈ rgb(245,244,246)
+           (ffprobe-sampled across frames/corners; codec noise spans 242–247). THREE.Color
+           parses the hex straight into linear working space — the same space texel.rgb
+           is in after the texture's sRGB decode, so the key distance is apples-to-apples. */
+        const createCoreKeyMaterial = (keyHex, keyEnabled = 1) =>
           new THREE.ShaderMaterial({
             uniforms: {
               coreMap: { value: null },
-              keyColor: {
-                value: new THREE.Color(keyValue, keyValue, keyValue),
-              },
+              keyColor: { value: new THREE.Color(keyHex) },
               keyEnabled: { value: keyEnabled },
+              pageBg: { value: new THREE.Color(PAGE_BG) },
             },
             vertexShader: `
               varying vec2 vUv;
@@ -3430,17 +3483,31 @@
               uniform sampler2D coreMap;
               uniform vec3 keyColor;
               uniform float keyEnabled;
+              uniform vec3 pageBg;
               varying vec2 vUv;
               void main() {
                 vec4 texel = texture2D(coreMap, vUv);
                 float keyDistance = distance(texel.rgb, keyColor);
-                float keyedAlpha = smoothstep(0.035, 0.16, keyDistance);
+                /* window: 0.045 covers the plate's codec noise (alpha hits true 0);
+                   kept tight above so the swan/window whites stay opaque */
+                float keyedAlpha = smoothstep(0.045, 0.10, keyDistance);
                 float alpha = texel.a * mix(1.0, keyedAlpha, keyEnabled);
-                if (alpha < 0.018) discard;
-                gl_FragColor = vec4(texel.rgb, alpha);
+                /* opaque-cutout threshold: surviving pixels render OPAQUE so the
+                   billboard joins the transmission buffer (rings refract the core) */
+                if (alpha < 0.45) discard;
+                /* despill: semi-keyed pixels blend toward the LIVE page backdrop, so
+                   residual plate haze and edge halos match the page, never read white */
+                vec3 rgb = mix(pageBg, texel.rgb, mix(1.0, keyedAlpha, keyEnabled));
+                gl_FragColor = vec4(rgb, alpha);
+                /* texel was decoded sRGB->linear by the texture; without this output
+                   encoding the billboard renders visibly darker than the source clip */
+                #include <colorspace_fragment>
               }
             `,
-            transparent: true,
+            /* NOT transparent: three.js only feeds opaque objects to the glass
+               transmission buffer — this is what lets the rings visibly REFRACT
+               and cover the core instead of smearing pale backdrop over it */
+            transparent: false,
             depthTest: true,
             depthWrite: true,
             side: THREE.DoubleSide,
@@ -3449,7 +3516,7 @@
 
         const coreVisualGroup = new THREE.Group();
         object.add(coreVisualGroup);
-        const coreImageMaterial = createCoreKeyMaterial(0.95);
+        const coreImageMaterial = createCoreKeyMaterial("#F5F4F6");
         const coreImage = new THREE.Mesh(
           new THREE.PlaneGeometry(3.24, 3.24),
           coreImageMaterial,
@@ -3481,6 +3548,7 @@
               );
               coreImageMaterial.uniforms.coreMap.value = texture;
               coreImageMaterial.uniforms.keyEnabled.value = 0;
+              sampleCoreReflect(texture.image); /* poster path reflects too */
               coreImage.visible = true;
               mineralCore.visible = false;
               coreAssetReady = true;
@@ -3510,6 +3578,59 @@
         coreVideoTexture.magFilter = THREE.LinearFilter;
         coreVideoTexture.generateMipmaps = false;
         let nextCoreFrameAt = 0;
+
+        /* ── core→ring color reflection: average the island's non-keyed pixels from a
+           16×16 downsample at a low cadence; the color feeds the core-reflect POINT
+           LIGHT (localized glints on the rotating glass), never a whole-ring tint ── */
+        const CORE_SAMPLE_MS = 450;
+        const CORE_REFLECT_INT = 3.2; /* point-light intensity once a sample is live */
+        const coreSampleCanvas = document.createElement("canvas");
+        coreSampleCanvas.width = coreSampleCanvas.height = 16;
+        const coreSampleCtx = coreSampleCanvas.getContext("2d", {
+          willReadFrequently: true,
+        });
+        const coreReflectTarget = new THREE.Color();
+        const coreReflectColor = new THREE.Color();
+        const coreReflectHSL = { h: 0, s: 0, l: 0 };
+        let coreReflectLive = false;
+        let nextCoreSampleAt = 0;
+        const sampleCoreReflect = (source) => {
+          try {
+            coreSampleCtx.drawImage(source, 0, 0, 16, 16);
+            const px = coreSampleCtx.getImageData(0, 0, 16, 16).data;
+            let r = 0, g = 0, b = 0, n = 0;
+            for (let i = 0; i < px.length; i += 4) {
+              /* the near-white key plate never votes — only the island itself */
+              if (px[i] > 225 && px[i + 1] > 225 && px[i + 2] > 225) continue;
+              r += px[i];
+              g += px[i + 1];
+              b += px[i + 2];
+              n++;
+            }
+            if (n < 8) return;
+            coreReflectTarget.setRGB(
+              r / n / 255,
+              g / n / 255,
+              b / n / 255,
+              THREE.SRGBColorSpace,
+            );
+            /* glass wants the core's HUE, not its darkness: normalize lightness and
+               lift saturation so the tint stays luminous through transmission */
+            coreReflectTarget.getHSL(coreReflectHSL, THREE.SRGBColorSpace);
+            coreReflectTarget.setHSL(
+              coreReflectHSL.h,
+              Math.min(1, coreReflectHSL.s * 1.35),
+              THREE.MathUtils.clamp(coreReflectHSL.l, 0.52, 0.7),
+              THREE.SRGBColorSpace,
+            );
+            if (!coreReflectLive) {
+              coreReflectColor.copy(coreReflectTarget);
+              coreReflectLive = true;
+            }
+          } catch (e) {
+            /* sampling must never break rendering */
+          }
+        };
 
         const coreVideo = document.createElement("video");
         coreVideo.muted = true;
@@ -3549,6 +3670,10 @@
           );
           coreVideoTexture.needsUpdate = true;
           nextCoreFrameAt = now + CORE_FRAME_MS;
+          if (now >= nextCoreSampleAt) {
+            sampleCoreReflect(coreVideoCanvas);
+            nextCoreSampleAt = now + CORE_SAMPLE_MS;
+          }
         };
         let videoCoreActivated = false;
         const activateVideoCore = () => {
@@ -3585,6 +3710,207 @@
         coreCage.visible = false;
         coreRings.forEach((layer) => (layer.visible = false));
         nucleusGroup.visible = false;
+
+        /* ═══ four-season engine ═══
+           One looping cycle on the idle clock (freezes with the render loop):
+           spring → summer → fall → winter, cfg.SEASON_S each, SEASON_FADE_S
+           crossfade. Every season contributes (a) a looping particle overlay
+           around the core, (b) a particle stream riding each ring (children of
+           the ring meshes, so they tumble with them), (c) glass tint/roughness
+           targets. Exactly two seasons are ever visible (during a fade). */
+        const SEASONS = [
+          {
+            key: "spring",
+            glass: { atten: "#EED9EA", body: "#F3EFF5", rough: 0.03 },
+            ring: { sprite: "flower", colors: ["#F7A8C4", "#FFFFFF", "#F9E27D"], count: 46, size: 0.085, flow: 0.35, opacity: 0.9, additive: false },
+            core: { sprite: "flower", colors: ["#F7A8C4", "#FFD7E6", "#FFFFFF"], count: 110, size: 0.1, speed: 0.16, sway: 0.35, dir: 1, opacity: 0.95, additive: false },
+          },
+          {
+            key: "summer",
+            glass: { atten: "#9FD9EC", body: "#EAF7FB", rough: 0.02 },
+            ring: { sprite: "glow", colors: ["#CBEFFB", "#FFFFFF", "#8FD4EF"], count: 64, size: 0.065, flow: 1.0, opacity: 0.85, additive: true },
+            core: { sprite: "glow", colors: ["#FFC46B", "#FF9D45", "#FFE9A8"], count: 90, size: 0.08, speed: 0.3, sway: 0.2, dir: 1, opacity: 0.8, additive: true },
+          },
+          {
+            key: "fall",
+            glass: { atten: "#E9D2B4", body: "#F3EDE4", rough: 0.05 },
+            ring: { sprite: "leaf", colors: ["#C4452B", "#E8A93C", "#E07B5F"], count: 40, size: 0.11, flow: 0.5, opacity: 0.95, additive: false },
+            core: { sprite: "leaf", colors: ["#C4452B", "#E8A93C", "#E07B5F"], count: 110, size: 0.12, speed: 0.2, sway: 0.6, dir: -1, opacity: 0.95, additive: false },
+          },
+          {
+            key: "winter",
+            glass: { atten: "#DCEBF6", body: "#F0F5F9", rough: 0.08 },
+            ring: { sprite: "flake", colors: ["#FFFFFF", "#DCEBFA", "#BFD9F2"], count: 84, size: 0.055, flow: 0.22, opacity: 0.95, additive: false },
+            core: { sprite: "flake", colors: ["#FFFFFF", "#EAF3FB"], count: 130, size: 0.075, speed: 0.11, sway: 0.25, dir: -1, opacity: 0.95, additive: false },
+          },
+        ];
+        const seasonHash = (n) => {
+          const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+          return v - Math.floor(v);
+        };
+        /* white-on-transparent sprites; vertex colors do the tinting */
+        const makeSeasonSprite = (kind) => {
+          const cnv = document.createElement("canvas");
+          cnv.width = cnv.height = 64;
+          const x = cnv.getContext("2d");
+          x.fillStyle = "#fff";
+          x.strokeStyle = "#fff";
+          if (kind === "flower") {
+            for (let p = 0; p < 5; p++) {
+              const a = (p / 5) * Math.PI * 2;
+              x.beginPath();
+              x.ellipse(32 + Math.cos(a) * 12, 32 + Math.sin(a) * 12, 9, 9, 0, 0, Math.PI * 2);
+              x.fill();
+            }
+            x.beginPath();
+            x.arc(32, 32, 6, 0, Math.PI * 2);
+            x.fill();
+          } else if (kind === "leaf") {
+            x.translate(32, 32);
+            x.rotate(-0.6);
+            x.beginPath();
+            x.moveTo(0, -20);
+            x.quadraticCurveTo(15, -6, 0, 20);
+            x.quadraticCurveTo(-15, -6, 0, -20);
+            x.fill();
+          } else if (kind === "flake") {
+            x.translate(32, 32);
+            x.lineWidth = 4;
+            x.lineCap = "round";
+            for (let p = 0; p < 6; p++) {
+              x.rotate(Math.PI / 3);
+              x.beginPath();
+              x.moveTo(0, 4);
+              x.lineTo(0, -20);
+              x.stroke();
+            }
+          } else {
+            /* glow: soft radial puff (summer embers + water sparkle) */
+            const g = x.createRadialGradient(32, 32, 0, 32, 32, 30);
+            g.addColorStop(0, "rgba(255,255,255,1)");
+            g.addColorStop(0.55, "rgba(255,255,255,.55)");
+            g.addColorStop(1, "rgba(255,255,255,0)");
+            x.fillStyle = g;
+            x.fillRect(0, 0, 64, 64);
+          }
+          const t = new THREE.CanvasTexture(cnv);
+          t.colorSpace = THREE.SRGBColorSpace;
+          return t;
+        };
+        const seasonSprites = {
+          flower: makeSeasonSprite("flower"),
+          glow: makeSeasonSprite("glow"),
+          leaf: makeSeasonSprite("leaf"),
+          flake: makeSeasonSprite("flake"),
+        };
+        const makeSeasonMat = (spriteKey, size, additive) =>
+          new THREE.PointsMaterial({
+            size,
+            map: seasonSprites[spriteKey],
+            vertexColors: true,
+            transparent: true,
+            opacity: 0,
+            depthWrite: false,
+            blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+            alphaTest: 0.02,
+            toneMapped: false,
+          });
+        const seasonFillColors = (colors, count, salt) => {
+          const col = new Float32Array(count * 3);
+          const c = new THREE.Color();
+          for (let k = 0; k < count; k++) {
+            c.set(colors[Math.floor(seasonHash(salt + k) * colors.length)]);
+            col[k * 3] = c.r;
+            col[k * 3 + 1] = c.g;
+            col[k * 3 + 2] = c.b;
+          }
+          return col;
+        };
+
+        /* core overlays: a looping band around the island (rise for spring/summer,
+           fall for autumn/winter); positions rewritten each frame while visible */
+        const CORE_BAND = { x: 1.95, yMin: -2.0, yMax: 1.45, zMin: -0.85, zMax: 1.15 };
+        const coreSeasonFx = SEASONS.map((s, si) => {
+          const n = s.core.count;
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+          geo.setAttribute("color", new THREE.BufferAttribute(seasonFillColors(s.core.colors, n, si * 7919), 3));
+          const seed = [];
+          for (let k = 0; k < n; k++)
+            seed.push({
+              x0: (seasonHash(si * 1000 + k) * 2 - 1) * CORE_BAND.x,
+              y0: seasonHash(si * 2000 + k) * (CORE_BAND.yMax - CORE_BAND.yMin),
+              z0: CORE_BAND.zMin + seasonHash(si * 3000 + k) * (CORE_BAND.zMax - CORE_BAND.zMin),
+              ph: seasonHash(si * 4000 + k) * Math.PI * 2,
+              sp: 0.7 + seasonHash(si * 5000 + k) * 0.6,
+            });
+          const pts = new THREE.Points(geo, makeSeasonMat(s.core.sprite, s.core.size, s.core.additive));
+          pts.visible = false;
+          pts.renderOrder = 8;
+          pts.frustumCulled = false;
+          coreVisualGroup.add(pts);
+          return { pts, seed, cfg: s.core };
+        });
+        const updateCoreSeasonFx = (fx, t, w) => {
+          fx.pts.material.opacity = fx.cfg.opacity * w;
+          fx.pts.visible = w > 0.003;
+          if (!fx.pts.visible) return;
+          const arr = fx.pts.geometry.attributes.position.array;
+          const span = CORE_BAND.yMax - CORE_BAND.yMin;
+          for (let k = 0; k < fx.seed.length; k++) {
+            const sd = fx.seed[k];
+            const travel = (sd.y0 + t * fx.cfg.speed * sd.sp) % span;
+            arr[k * 3] = sd.x0 + Math.sin(t * 0.7 * sd.sp + sd.ph) * fx.cfg.sway;
+            arr[k * 3 + 1] =
+              fx.cfg.dir > 0 ? CORE_BAND.yMin + travel : CORE_BAND.yMax - travel;
+            arr[k * 3 + 2] = sd.z0 + Math.cos(t * 0.45 + sd.ph) * 0.1;
+          }
+          fx.pts.geometry.attributes.position.needsUpdate = true;
+        };
+
+        /* ring streams: particles seeded on each band's circumference as CHILDREN
+           of the ring mesh — they tumble with it; local-Z rotation makes them
+           flow along the band (water/snow-string/petal/leaf streams) */
+        const ringSeasonFx = rings.map((ring, ri) =>
+          SEASONS.map((s, si) => {
+            const n = s.ring.count;
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(n * 3);
+            const R = cfg.RING_RADII[ri];
+            for (let k = 0; k < n; k++) {
+              const a = (k / n) * Math.PI * 2 + seasonHash(ri * 77 + si * 913 + k) * 0.5;
+              const rr = R + (seasonHash(ri * 131 + si * 517 + k) - 0.5) * cfg.RING_BAND_WIDTH[ri] * 1.4;
+              pos[k * 3] = Math.cos(a) * rr;
+              pos[k * 3 + 1] = Math.sin(a) * rr;
+              pos[k * 3 + 2] =
+                (seasonHash(ri * 313 + si * 271 + k) - 0.5) * cfg.RING_BAND_DEPTH[ri] * 2.4;
+            }
+            geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute("color", new THREE.BufferAttribute(seasonFillColors(s.ring.colors, n, ri * 3571 + si * 6373), 3));
+            const pts = new THREE.Points(geo, makeSeasonMat(s.ring.sprite, s.ring.size, s.ring.additive));
+            pts.visible = false;
+            pts.renderOrder = 24 + ri;
+            pts.frustumCulled = false;
+            ring.add(pts);
+            return { pts, flow: s.ring.flow, op: s.ring.opacity };
+          }),
+        );
+
+        const seasonAtten = SEASONS.map((s) => new THREE.Color(s.glass.atten));
+        const seasonBody = SEASONS.map((s) => new THREE.Color(s.glass.body));
+        const seasonAttenMix = new THREE.Color();
+        const seasonBodyMix = new THREE.Color();
+        const smooth01 = (a, b, x) => {
+          const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
+          return u * u * (3 - 2 * u);
+        };
+        const seasonWeights = (t) => {
+          const total = SEASONS.length * cfg.SEASON_S;
+          const tt = ((t % total) + total) % total;
+          const i = Math.floor(tt / cfg.SEASON_S);
+          const blend = smooth01(cfg.SEASON_S - cfg.SEASON_FADE_S, cfg.SEASON_S, tt - i * cfg.SEASON_S);
+          return { i, j: (i + 1) % SEASONS.length, blend };
+        };
 
         const particleCount = innerWidth <= 620 ? 42 : 86;
         const particlePositions = new Float32Array(particleCount * 3);
@@ -4355,7 +4681,8 @@
           prevNow = 0; /* accumulated rendered-time (ms) — drives pulse; never jumps across hidden gaps */
         const spinAngle = cfg.RING_LOOP.map((l) =>
           THREE.MathUtils.degToRad(l.PHASE),
-        ); /* per-ring accumulated loop angle */
+        );
+        const precAngle = cfg.RING_LOOP.map(() => 0); /* per-ring accumulated loop angle */
         const CONV_EPS = {
           t: 0.0002,
           lk: 0.002,
@@ -4504,15 +4831,36 @@
        counter-rotating. The angle only ACCUMULATES while spinOn — when a degrade
        branch flips spin off, the rings freeze exactly where they are (no snap). */
           rings.forEach((r, i) => {
-            if (spinOn)
+            if (spinOn) {
               spinAngle[i] +=
                 (THREE.MathUtils.degToRad(360 / cfg.RING_LOOP[i].PERIOD_S) *
                   dt *
                   (1 + 0.11 * Math.sin(idleClock / 2600 + i * 1.9))) /
                 1000;
-            ringQ.setFromAxisAngle(ringAxes[i], spinAngle[i]);
+              precAngle[i] +=
+                (THREE.MathUtils.degToRad(
+                  360 / cfg.RING_LOOP[i].PRECESS_S,
+                ) *
+                  dt) /
+                1000;
+            }
+            /* the spin axis itself precesses — the tumble direction keeps drifting
+               through 3D instead of a fixed forward/backward orbit */
+            ringSpinAxis
+              .copy(ringAxes[i])
+              .applyQuaternion(
+                precQ.setFromAxisAngle(ringPrecAxes[i], precAngle[i]),
+              );
+            ringQ.setFromAxisAngle(ringSpinAxis, spinAngle[i]);
             r.quaternion.copy(ringQ).multiply(ringBaseQ[i]);
           });
+          if (coreReflectLive) {
+            /* ease toward the island's sampled palette (~0.5s time constant); the
+               glass picks it up as a moving glint from the core-reflect light */
+            coreReflectColor.lerp(coreReflectTarget, 1 - Math.exp(-dt / 500));
+            coreReflectLight.color.copy(coreReflectColor);
+            coreReflectLight.intensity = CORE_REFLECT_INT;
+          }
 
           const coreTime = idleClock / 1000;
           mineralCore.rotation.y =
@@ -4537,6 +4885,33 @@
           coreParticles.rotation.y = coreTime * 0.045;
           coreParticles.rotation.x = 0.035 * Math.sin(coreTime * 0.21);
           coreParticles.material.opacity = 0.45 + 0.09 * Math.sin(coreTime * 0.7);
+
+          /* ── four-season cycle: crossfade weights drive the core overlays, the
+             ring streams, and the glass tint/roughness targets ── */
+          const sw = seasonWeights(coreTime);
+          seasonAttenMix.copy(seasonAtten[sw.i]).lerp(seasonAtten[sw.j], sw.blend);
+          seasonBodyMix.copy(seasonBody[sw.i]).lerp(seasonBody[sw.j], sw.blend);
+          const seasonRough =
+            SEASONS[sw.i].glass.rough * (1 - sw.blend) +
+            SEASONS[sw.j].glass.rough * sw.blend;
+          glassMats.forEach((m, k) => {
+            m.attenuationColor.copy(seasonAttenMix);
+            m.color.copy(seasonBodyMix);
+            /* roughness seasons apply to the GLASS rings only — chrome keeps its
+               fixed soft-mirror finish (seasonal mirror-sharpness reads as black) */
+            if (!(k % 2)) m.roughness = seasonRough + k * 0.006;
+          });
+          SEASONS.forEach((s, si) => {
+            const w = si === sw.i ? 1 - sw.blend : si === sw.j ? sw.blend : 0;
+            updateCoreSeasonFx(coreSeasonFx[si], coreTime, w);
+            ringSeasonFx.forEach((perRing, ri) => {
+              const h = perRing[si];
+              h.pts.material.opacity = h.op * w;
+              h.pts.visible = w > 0.003;
+              if (h.pts.visible)
+                h.pts.rotation.z = coreTime * h.flow * (ri % 2 ? -1 : 1);
+            });
+          });
           const glintPhase = idleClock / 1300;
           chromeGlint.position.set(
             object.position.x + Math.cos(glintPhase) * 4.2,
@@ -4567,6 +4942,12 @@
        Backdrop stays OPAQUE (transmission renders flat white over transparency) —
        its color shifting IS the visible section-atmosphere change. */
           backdrop.material.color.setRGB(cur.bgR, cur.bgG, cur.bgB);
+          /* keep the billboard's despill matched to the live backdrop color */
+          coreImageMaterial.uniforms.pageBg.value.setRGB(
+            cur.bgR,
+            cur.bgG,
+            cur.bgB,
+          );
           key.intensity = KEY_BASE * cur.lk;
           fill.intensity = cfg.FILL_INT * cur.lk;
           amb.intensity = AMB_INT * cur.lk;
@@ -4722,6 +5103,10 @@
           cur: { ...cur },
           fov: camera.fov,
           spin: spinAngle.map((a) => (a * 180) / Math.PI),
+          season: (() => {
+            const w = seasonWeights(idleClock / 1000);
+            return { key: SEASONS[w.i].key, next: SEASONS[w.j].key, blend: +w.blend.toFixed(3) };
+          })(),
           rim: rim.intensity,
           bg: "#" + backdrop.material.color.getHexString().toUpperCase(),
           spinOn: !staticMode && cfg.RING_LOOP_ON !== false,
