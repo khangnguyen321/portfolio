@@ -30,6 +30,12 @@
         const heroOnly = false;
         const useTransmission = cfg.TRANSMISSION !== false;
         const staticMode = false;
+        /* the engine's one reduced-motion gate: used ONLY to suppress the scroll-velocity
+           ring-spin boost. The core scroll choreography stays live by design (see the
+           heroOnly/staticMode comment above); this const does not disable anything else. */
+        const prefersReducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
 
         /* normalize keyframe channels once: default any omitted viewpoint/env values and
      pre-parse bg into a lerpable THREE.Color */
@@ -1841,6 +1847,8 @@
           THREE.MathUtils.degToRad(l.PHASE),
         );
         const precAngle = cfg.RING_LOOP.map(() => 0); /* per-ring accumulated loop angle */
+        let scrollSpin = 0; /* rad/s angular-velocity boost from scroll, decays to 0 */
+        let lastScrollYSpin = window.scrollY; /* prev-frame scrollY for per-frame delta */
         const CONV_EPS = {
           t: 0.0002,
           lk: 0.002,
@@ -1961,6 +1969,27 @@
           prevNow = now;
           if (keepAlive) idleClock += dt;
 
+          /* scroll-velocity ring boost: each frame's scroll delta adds angular momentum
+             that decays back to the idle spin (see RING_SCROLL_SPIN_* in OBJ_CFG). Gated
+             by spinOn (freeze contract) AND reduced motion. lastScrollYSpin always tracks
+             so resuming after a freeze never spikes. */
+          const scrollY_now = window.scrollY;
+          const scrollDeltaSpin = scrollY_now - lastScrollYSpin;
+          lastScrollYSpin = scrollY_now;
+          const scrollSpinActive =
+            spinOn && !prefersReducedMotion && cfg.RING_SCROLL_SPIN_ON !== false;
+          if (scrollSpinActive) {
+            scrollSpin += scrollDeltaSpin * cfg.RING_SCROLL_SPIN_GAIN;
+            scrollSpin *= Math.exp(-dt / cfg.RING_SCROLL_SPIN_TAU_MS);
+            scrollSpin = THREE.MathUtils.clamp(
+              scrollSpin,
+              -cfg.RING_SCROLL_SPIN_MAX,
+              cfg.RING_SCROLL_SPIN_MAX,
+            );
+          } else {
+            scrollSpin = 0;
+          }
+
           const idle =
             !staticMode && cfg.IDLE_DRIFT_DEG > 0
               ? THREE.MathUtils.degToRad(cfg.IDLE_DRIFT_DEG) *
@@ -1995,6 +2024,11 @@
                   dt *
                   (1 + 0.11 * Math.sin(idleClock / 2600 + i * 1.9))) /
                 1000;
+              if (scrollSpin !== 0) {
+                spinAngle[i] +=
+                  (Math.sign(cfg.RING_LOOP[i].PERIOD_S) * scrollSpin * dt) /
+                  1000;
+              }
               precAngle[i] +=
                 (THREE.MathUtils.degToRad(
                   360 / cfg.RING_LOOP[i].PRECESS_S,

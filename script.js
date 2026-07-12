@@ -300,6 +300,15 @@
           } /* ring D: diagonal counter-tumble */,
         ],
         RING_LOOP_ON: true,
+        /* scroll-velocity ring boost: scrolling injects angular momentum into the ring
+       spin that decays back to idle. GAIN = rad/s added per px of scroll this frame;
+       TAU_MS = decay time-constant (higher = longer flywheel carry); MAX = clamp on
+       the boost angular velocity (rad/s) so a hard touch-flick can't over-spin.
+       Suppressed under prefers-reduced-motion in engine.js. */
+        RING_SCROLL_SPIN_ON: true,
+        RING_SCROLL_SPIN_GAIN: 0.006,
+        RING_SCROLL_SPIN_TAU_MS: 320,
+        RING_SCROLL_SPIN_MAX: 2.6,
         /* — per-section ring FORMATIONS: the one object evolves instead of new objects.
        Each keyframe names a formation (form:'nest'|...); boot resolves it to formR and
        targetAt interpolates the RESOLVED per-ring params, so mid-scroll poses blend

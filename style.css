@@ -237,13 +237,7 @@
       }
       nav.links {
         display: flex;
-        gap: 30px;
-        background: rgba(255, 253, 252, 0.66);
-        border: 1px solid rgba(23, 42, 58, 0.08);
-        box-shadow: 0 10px 32px rgba(23, 42, 58, 0.06);
-        backdrop-filter: blur(12px);
-        border-radius: 999px;
-        padding: 12px 30px;
+        gap: 34px;
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
@@ -253,6 +247,16 @@
         font-size: 14px;
         color: var(--ink-dim);
         transition: color var(--motion-fast) ease;
+      }
+      nav.links a:not(:first-child)::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: calc(-17px);
+        transform: translate(-50%, -50%);
+        width: 1px;
+        height: 14px;
+        background: rgba(23, 42, 58, 0.15);
       }
       nav.links a::after {
         content: "";
@@ -356,8 +360,8 @@
       }
 
       /* ═══ EDITORIAL GRID SCAFFOLD ═══
-   Every main-content section: centered container, two columns —
-   sticky label (left) + content (right). Collapses on mobile. */
+   Every main-content section: a full-width .sec-label rule (index + name +
+   amber→graphite rule-line) sits above a centered .wrap containing .content. */
       section.grid-sec {
         padding: clamp(80px, 11vh, 140px) var(--pad-x);
         position: relative;
@@ -411,31 +415,27 @@
       .wrap {
         max-width: var(--wrap-max);
         margin: 0 auto;
-        display: grid;
-        grid-template-columns: clamp(150px, 17vw, 240px) minmax(0, 1fr);
-        gap: clamp(26px, 4.5vw, 70px);
-        align-items: start;
       }
-      .eyebrow {
+      .sec-label {
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.26em;
         text-transform: uppercase;
         color: var(--accent-2);
-        position: sticky;
-        top: 110px;
         display: flex;
         align-items: baseline;
         gap: 12px;
+        width: 100%;
+        max-width: var(--wrap-max);
+        margin: 0 auto clamp(28px, 4vw, 44px);
       }
-      .eyebrow::after {
-        content: "";
+      .rule-line {
         flex: 1;
         height: 2px;
-        background: linear-gradient(90deg, var(--accent), transparent);
         align-self: center;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
       }
-      .eyebrow .idx {
+      .sec-label .idx {
         font-style: normal;
         color: var(--accent);
         letter-spacing: 0.08em;
@@ -567,7 +567,7 @@
         transition-delay: var(--reveal-delay, 0ms);
         will-change: opacity, transform, filter;
       }
-      .js .eyebrow.reveal {
+      .js .sec-label.reveal {
         transform: translate3d(-22px, 0, 0);
       }
       .js .reveal.in {
@@ -595,17 +595,17 @@
       .grid-sec .lede {
         transition: color 0.45s ease;
       }
-      .eyebrow::after,
+      .sec-label .rule-line,
       h2.display::after {
         transform: scaleX(1);
         transform-origin: left center;
       }
-      .js .eyebrow.reveal::after,
+      .js .sec-label.reveal .rule-line,
       .js h2.display.reveal::after {
         transform: scaleX(0);
         transition: transform 720ms var(--ease-out) 180ms;
       }
-      .js .eyebrow.reveal.in::after,
+      .js .sec-label.reveal.in .rule-line,
       .js h2.display.reveal.in::after {
         transform: scaleX(1);
       }
@@ -1240,11 +1240,8 @@
       #how + section.grid-sec {
         border-top: none;
       }
-      #how .eyebrow {
+      #how .sec-label {
         color: var(--accent-2);
-      }
-      #how .eyebrow::after {
-        background: linear-gradient(90deg, var(--accent), transparent);
       }
       #how h2.display {
         color: var(--ink);
@@ -1257,7 +1254,7 @@
         --line: rgba(255, 255, 255, 0.18);
         --line-soft: rgba(255, 255, 255, 0.13);
       }
-      body.sec-ink section.grid-sec .eyebrow {
+      body.sec-ink section.grid-sec .sec-label {
         /* neighbors' kickers dim on ink; #how's own stays token-bright via its
            more specific rule above — deliberate active-section hierarchy */
         color: #9ba3a8;
@@ -1579,11 +1576,10 @@
       }
 
       /* ── contact form — single full-width liquid-glass card, centered
-         against the sticky eyebrow label now that .cta-copy is gone ── */
+         under the full-width .sec-label rule now that .cta-copy is gone ── */
       #cta .wrap {
-        /* explicit width: without .cta-copy's bulky text propping the row
-           open, this grid item's stretch alignment would otherwise resolve
-           against its own (now small) content size instead of the full track */
+        /* .wrap is a plain block (no grid), so align-items is a no-op here;
+           width kept explicit so the card centers at the intended max-width */
         width: 100%;
         align-items: center;
       }
@@ -1774,13 +1770,6 @@
         }
         .rail {
           display: none;
-        }
-        .wrap {
-          grid-template-columns: 1fr;
-          gap: 26px;
-        }
-        .eyebrow {
-          position: static;
         }
         .work-grid {
           grid-template-columns: 1fr;
