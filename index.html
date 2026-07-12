@@ -4979,6 +4979,15 @@
           }
           return out;
         }
+        /* swept-shell bounds per ring (world units, scale 1) — a tumbling band sweeps
+           the spherical shell [IN, OUT]; the QA hook derives live no-touch margins
+           from these (safety rules R1/R2 in the FORMATIONS comment) */
+        const RING_SHELL_IN = cfg.RING_RADII.map(
+          (R, i) => R - cfg.RING_BAND_WIDTH[i] / 2,
+        );
+        const RING_SHELL_OUT = cfg.RING_RADII.map((R, i) =>
+          Math.hypot(R + cfg.RING_BAND_WIDTH[i] / 2, cfg.RING_BAND_DEPTH[i] / 2),
+        );
         let anchors = [];
         function computeAnchors() {
           const vh = innerHeight;
@@ -5087,7 +5096,8 @@
           needsFrame = true,
           entranceT0 = -1,
           firstFrame = false,
-          dead = false;
+          dead = false,
+          lastConverged = false;
         let frames = 0,
           probeStart = 0,
           rungDrops = 0;
@@ -5150,8 +5160,10 @@
                   ...formChannelsOf(K0.formR),
                 }
             : targetAt(scrollY);
-          if (staticMode) Object.assign(cur, tgt, { t: 0, o: 1 });
-          else {
+          if (staticMode) {
+            Object.assign(cur, tgt, { t: 0, o: 1 });
+            lastConverged = true;
+          } else {
             const f = cfg.OBJ_SMOOTH;
             let converged = true;
             for (const ch of CHANNELS) {
@@ -5162,6 +5174,7 @@
               } else cur[ch] = tgt[ch];
             }
             needsFrame = !converged;
+            lastConverged = converged;
           }
 
           /* entrance (skipped in static mode) */
@@ -5566,6 +5579,52 @@
           bg:
             "#" +
             backdrop.material.uniforms.uBase.value.getHexString().toUpperCase(),
+          converged: lastConverged,
+          anchors: anchors.map((a) => Math.round(a.y)),
+          form: {
+            fa: cur.fa,
+            gate: smooth01(cfg.FORM_GATE[0], cfg.FORM_GATE[1], cur.fa),
+            scale: rings.map((r) => r.scale.x),
+            yApplied: rings.map((r) => r.position.y),
+          },
+          pool: {
+            x: backdrop.material.uniforms.uCenter.value.x,
+            y: backdrop.material.uniforms.uCenter.value.y,
+            r: backdrop.material.uniforms.uRadius.value,
+            strength: backdrop.material.uniforms.uStrength.value,
+          },
+          /* linear-space triplets so probes can assert the despill mirror
+             (despill == mix(bg, pool, pl)) without color-space conversions */
+          bgLin: backdrop.material.uniforms.uBase.value.toArray(),
+          poolLin: backdrop.material.uniforms.uPool.value.toArray(),
+          despillLin: coreImageMaterial.uniforms.pageBg.value.toArray(),
+          safety: (() => {
+            const s = rings.map((r) => r.scale.x);
+            const y = rings.map((r) => r.position.y);
+            const aligned = cur.fa >= cfg.FORM_GATE[0];
+            let pairMin = Infinity;
+            for (let i = 0; i < rings.length - 1; i++) {
+              /* tumbling: conservative shell separation incl. center offsets;
+                 aligned (flat corridor / norm-shells): radial gap */
+              const m = aligned
+                ? RING_SHELL_IN[i + 1] * s[i + 1] - RING_SHELL_OUT[i] * s[i]
+                : RING_SHELL_IN[i + 1] * s[i + 1] -
+                  (Math.abs(y[i] - y[i + 1]) + RING_SHELL_OUT[i] * s[i]);
+              if (m < pairMin) pairMin = m;
+            }
+            let islandMin = Infinity;
+            for (let i = 0; i < rings.length; i++) {
+              const m = aligned
+                ? Math.hypot(RING_SHELL_IN[i] * s[i], y[i]) - 1.5
+                : RING_SHELL_IN[i] * s[i] - Math.abs(y[i]) - 1.5;
+              if (m < islandMin) islandMin = m;
+            }
+            const gateOK = !(
+              Math.max(...y.map(Math.abs)) > 0.02 &&
+              cur.fa < cfg.FORM_GATE[0]
+            );
+            return { pairMin, islandMin, gateOK };
+          })(),
           spinOn: !staticMode && cfg.RING_LOOP_ON !== false,
           raf: !!raf,
           drops: rungDrops,
