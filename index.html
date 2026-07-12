@@ -535,6 +535,15 @@
         opacity: 1;
         background: var(--accent);
       }
+      /* the rail sits OUTSIDE the sec-ink token scope (it must not inherit
+         section re-tokens) — flip it explicitly on the ink band or the active
+         label lands #262b2e-on-#22262A */
+      body.sec-ink .rail a {
+        color: #8b9398;
+      }
+      body.sec-ink .rail a.active {
+        color: #eceff1;
+      }
       .content {
         min-width: 0;
       }
@@ -587,6 +596,25 @@
         filter: none;
         transform: none;
         will-change: auto;
+        /* revealed elements also fade color/surface changes (the sec-ink band
+           re-tokens them mid-page). Reveal properties stay first — the entrance
+           animation and its stagger delay are unchanged. */
+        transition:
+          opacity var(--motion-slow) var(--ease-out),
+          transform var(--motion-slow) var(--ease-out),
+          filter 620ms ease,
+          color 0.45s ease,
+          background 0.45s ease,
+          border-color 0.45s ease;
+        transition-delay: var(--reveal-delay, 0ms);
+      }
+      /* non-reveal text inside sections fades the same way on sec-ink flips;
+         links are excluded — .text-link owns its own color transition */
+      .grid-sec h2,
+      .grid-sec h3,
+      .grid-sec p,
+      .grid-sec .lede {
+        transition: color 0.45s ease;
       }
       .eyebrow::after,
       h2.display::after {
@@ -1872,7 +1900,7 @@
         />
       </svg>
       <div class="hero-inner">
-        <h1 id="he1">Systems That<br />Ship Themselves.</h1>
+        <h2 id="he1">Systems That<br />Ship Themselves.</h2>
         <p class="hero-sub" id="he2">
           Enterprise SaaS, workflow automation, and AI-enabled tooling — built
           by a project engineer who sits inside real operations.
@@ -2854,7 +2882,9 @@
             swept shells stay disjoint at every interpolated pose;
        R2 — per-ring y offsets only apply once fa ≥ FORM_GATE (flat rings clear each
             other radially — s uniform — and clear the island: every flat-ring point
-            sits ≥ inner radius 1.57 > island 1.5 from the shared center);
+            sits ≥ inner radius 1.57 > the landmass's measured 1.55 max lateral
+            extent; the keyed content's full 2.10 reach is the swan's flight arc,
+            which rings legitimately cross in depth on the flat billboard);
        R3 — formations with distinct per-ring y (ladder) may only be keyframe-adjacent
             to flat aligned formations (disc) — the "flat corridor". — */
         FORMATIONS: {
@@ -3311,7 +3341,9 @@
         /* opaque in-scene backdrop matched to --bg — now a minimal ShaderMaterial:
      per-section tone (uBase) plus a soft "light pool" tracking the object
      (uCenter/uRadius/uStrength). Plateau falloff (g ≡ 1 for d < 0.7R) keeps the
-     island's despill EXACT across its whole footprint. Raw ShaderMaterials skip
+     island's despill exact across the landmass (within ~1.51 wu of center at the
+     authored radii); the outermost keyed fringes (swan flight arc, ≤1.84 wu) ride
+     the falloff with a graceful ≤~6% drift at the ink stop. Raw ShaderMaterials skip
      tone mapping (≡ the old toneMapped:false) but NOT output encoding — the
      colorspace_fragment include keeps uStrength=0 byte-identical to the old
      MeshBasicMaterial (probe-verified corner pixels). Required: transmission
@@ -5413,8 +5445,9 @@
             bd.uStrength.value = cur.pl;
           }
           /* keep the billboard's despill matched to the live backdrop color AT THE
-       OBJECT: the plateau guarantees the island sits on mix(base, pool, pl)
-       exactly, so this mirrors the fragment term-for-term (same poolColor temp) */
+       OBJECT: the plateau puts the landmass on mix(base, pool, pl) exactly, so
+       this mirrors the fragment term-for-term (same poolColor temp); only the
+       outermost keyed fringes extend past 0.7R into the falloff */
           coreImageMaterial.uniforms.pageBg.value
             .setRGB(cur.bgR, cur.bgG, cur.bgB)
             .lerp(poolColor, cur.pl);
@@ -5613,10 +5646,13 @@
               if (m < pairMin) pairMin = m;
             }
             let islandMin = Infinity;
+            /* 1.55 = measured max LATERAL extent of the keyed landmass (audit,
+               shader-faithful key over coreRings.mp4 frames) — not the nominal
+               1.5 silhouette guess */
             for (let i = 0; i < rings.length; i++) {
               const m = aligned
-                ? Math.hypot(RING_SHELL_IN[i] * s[i], y[i]) - 1.5
-                : RING_SHELL_IN[i] * s[i] - Math.abs(y[i]) - 1.5;
+                ? Math.hypot(RING_SHELL_IN[i] * s[i], y[i]) - 1.55
+                : RING_SHELL_IN[i] * s[i] - Math.abs(y[i]) - 1.55;
               if (m < islandMin) islandMin = m;
             }
             const gateOK = !(
