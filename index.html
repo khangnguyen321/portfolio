@@ -2733,6 +2733,65 @@
           } /* ring D: diagonal counter-tumble */,
         ],
         RING_LOOP_ON: true,
+        /* — per-section ring FORMATIONS: the one object evolves instead of new objects.
+       Each keyframe names a formation (form:'nest'|...); boot resolves it to formR and
+       targetAt interpolates the RESOLVED per-ring params, so mid-scroll poses blend
+       continuously. Channels per ring: scale (fs), y offset (fy), tilt/yaw/roll pose
+       (ft/fw/fl). fa = alignment 0→1: 0 keeps the free RING_LOOP tumble, 1 holds the
+       authored pose (still revolving in-plane on the SAME spinAngle accumulator, so
+       every kill switch freezes formations exactly like the tumble).
+       SAFETY (audited invariants):
+       R1 — every formation keeps s ≥ 1 and non-decreasing in ring index, so adjacent
+            swept shells stay disjoint at every interpolated pose;
+       R2 — per-ring y offsets only apply once fa ≥ FORM_GATE (flat rings clear each
+            other radially — s uniform — and clear the island: every flat-ring point
+            sits ≥ inner radius 1.57 > island 1.5 from the shared center);
+       R3 — formations with distinct per-ring y (ladder) may only be keyframe-adjacent
+            to flat aligned formations (disc) — the "flat corridor". — */
+        FORMATIONS: {
+          nest: {
+            a: 0,
+            s: [1, 1, 1, 1],
+            y: [0, 0, 0, 0],
+            tilt: [10, 40, 70, 100],
+            yaw: [0, 45, 90, 135],
+            roll: [-5, 8, -4, 6],
+          } /* ≡ construction pose — the zero-visual-change identity */,
+          orbit: {
+            a: 0,
+            s: [1.15, 1.3, 1.45, 1.6],
+            y: [0, 0, 0, 0],
+            tilt: [10, 40, 70, 100],
+            yaw: [0, 45, 90, 135],
+            roll: [-5, 8, -4, 6],
+          } /* nest expanded into separated free-tumbling orbits */,
+          gyro: {
+            a: 1,
+            s: [1, 1, 1, 1],
+            y: [0, 0, 0, 0],
+            tilt: [0, 90, 90, 48],
+            yaw: [0, 0, 90, 45],
+            roll: [0, 0, 0, 0],
+          } /* aligned toward orthogonal axes — gyroscope/instrument read */,
+          disc: {
+            a: 1,
+            s: [1.06, 1.06, 1.06, 1.06],
+            y: [-0.12, -0.12, -0.12, -0.12],
+            tilt: [0, 0, 0, 0],
+            yaw: [0, 0, 0, 0],
+            roll: [0, 0, 0, 0],
+          } /* flat co-planar ground rings, slight drop */,
+          ladder: {
+            a: 1,
+            s: [1, 1, 1, 1] /* MUST stay uniform — R2's radial fallback */,
+            y: [1.05, 0.35, -0.35, -1.05],
+            tilt: [0, 0, 0, 0],
+            yaw: [0, 0, 0, 0],
+            roll: [0, 0, 0, 0],
+          } /* vertical stack through the island */,
+        },
+        FORM_GATE: [0.97, 1.0] /* smoothstep window on fa that gates y offsets (R2) */,
+        ALIGNED_SPIN_MUL: 0.4 /* in-plane revolve rate of aligned poses (rides spinAngle) */,
         WARM_RIM_MULT: 3.0 /* rim intensity multiplier at w=1 (K7 amber moment) */,
         /* — rock instrumentation (addendum A2): PCB traces walking the facets + engraved
        glyphs; amber only on the 3 upper-hemisphere solder dots — */
@@ -3068,6 +3127,9 @@
           k.f ??= 34;
           k.lk ??= 1;
           k.w ??= 0;
+          k.pl ??= 0;
+          k.form ??= "nest";
+          k.formR = cfg.FORMATIONS[k.form] || cfg.FORMATIONS.nest;
           k.bgC = new THREE.Color(k.bg || PAGE_BG);
         });
         const BG0 = new THREE.Color(PAGE_BG);
@@ -3351,6 +3413,12 @@
         const ringQ = new THREE.Quaternion();
         const precQ = new THREE.Quaternion();
         const coreLayerQ = new THREE.Quaternion();
+        /* formation scratch (per-frame, no allocs in the loop) */
+        const ringLiveQ = new THREE.Quaternion();
+        const ringFormQ = new THREE.Quaternion();
+        const ringPlaneQ = new THREE.Quaternion();
+        const ringFormE = new THREE.Euler();
+        const RING_PLANE_AXIS = new THREE.Vector3(0, 0, 1);
 
         /* the core's palette reaches the rings as LIGHT, not a material tint: a
            point light parked at the island center colors only the glass surfaces
@@ -4706,6 +4774,42 @@
             Math.max(
               ...cfg.RING_BAND_WIDTH,
             )); /* object's rest bounding diameter, world units */
+        /* flat scalar channel list — everything cur/tgt eases per frame. Formation
+           presets are resolved to per-ring scalars (fs/fy/ft/fw/fl + shared fa) so
+           interpolation stays numeric; preset names never reach targetAt. */
+        const RING_N = cfg.RING_RADII.length;
+        const FORM_CHANNELS = [];
+        for (let i = 0; i < RING_N; i++)
+          FORM_CHANNELS.push("fs" + i, "fy" + i, "ft" + i, "fw" + i, "fl" + i);
+        const CHANNELS = [
+          "x",
+          "y",
+          "s",
+          "t",
+          "o",
+          "p",
+          "r",
+          "f",
+          "lk",
+          "w",
+          "pl",
+          "fa",
+          "bgR",
+          "bgG",
+          "bgB",
+          ...FORM_CHANNELS,
+        ];
+        function formChannelsOf(fr) {
+          const out = { fa: fr.a };
+          for (let i = 0; i < RING_N; i++) {
+            out["fs" + i] = fr.s[i];
+            out["fy" + i] = fr.y[i];
+            out["ft" + i] = fr.tilt[i];
+            out["fw" + i] = fr.yaw[i];
+            out["fl" + i] = fr.roll[i];
+          }
+          return out;
+        }
         let anchors = [];
         function computeAnchors() {
           const vh = innerHeight;
@@ -4713,7 +4817,11 @@
             if (!k.a) return { y: 0, k };
             const el = document.querySelector(k.a);
             return {
-              y: el ? Math.max(1, el.offsetTop - cfg.ANCHOR_VH * vh) : 0,
+              /* k.av overrides ANCHOR_VH per keyframe — guard keyframes use it to
+                 compress color ramps into inter-section padding */
+              y: el
+                ? Math.max(1, el.offsetTop - (k.av ?? cfg.ANCHOR_VH) * vh)
+                : 0,
               k,
             };
           }).sort((a, b) => a.y - b.y);
@@ -4734,9 +4842,11 @@
               f: 34,
               lk: 1,
               w: 0,
+              pl: 0,
               bgR: BG0.r,
               bgG: BG0.g,
               bgB: BG0.b,
+              ...formChannelsOf(cfg.FORMATIONS.nest),
             };
           }
           let a = anchors[0],
@@ -4757,7 +4867,7 @@
             a === b ? 0 : Math.min(Math.max((scrollY - a.y) / span, 0), 1);
           const eased = u * u * (3 - 2 * u);
           const L = (p, q) => p + (q - p) * eased;
-          return {
+          const out = {
             x: L(a.k.x, b.k.x),
             y: L(a.k.y, b.k.y),
             s: L(a.k.s, b.k.s),
@@ -4768,10 +4878,22 @@
             f: L(a.k.f, b.k.f),
             lk: L(a.k.lk, b.k.lk),
             w: L(a.k.w, b.k.w),
+            pl: L(a.k.pl, b.k.pl),
+            fa: L(a.k.formR.a, b.k.formR.a),
             bgR: L(a.k.bgC.r, b.k.bgC.r),
             bgG: L(a.k.bgC.g, b.k.bgC.g),
             bgB: L(a.k.bgC.b, b.k.bgC.b),
           };
+          const fA = a.k.formR,
+            fB = b.k.formR;
+          for (let i = 0; i < RING_N; i++) {
+            out["fs" + i] = L(fA.s[i], fB.s[i]);
+            out["fy" + i] = L(fA.y[i], fB.y[i]);
+            out["ft" + i] = L(fA.tilt[i], fB.tilt[i]);
+            out["fw" + i] = L(fA.yaw[i], fB.yaw[i]);
+            out["fl" + i] = L(fA.roll[i], fB.roll[i]);
+          }
+          return out;
         }
 
         /* ── render loop ── */
@@ -4786,9 +4908,11 @@
           f: 34,
           lk: 1,
           w: 0,
+          pl: 0,
           bgR: BG0.r,
           bgG: BG0.g,
           bgB: BG0.b,
+          ...formChannelsOf(cfg.FORMATIONS.nest),
         };
         let raf = 0,
           needsFrame = true,
@@ -4808,10 +4932,19 @@
           t: 0.0002,
           lk: 0.002,
           w: 0.002,
+          pl: 0.002,
+          fa: 0.002,
           bgR: 0.002,
           bgG: 0.002,
           bgB: 0.002,
         }; /* per-channel park thresholds; default 0.02 */
+        /* formation channel thresholds must snap SUB-PIXEL at max object scale
+           (~250 px/world-unit): fs 0.001 ≈ 0.5px on a 2wu radius, fy 0.002wu ≈ 0.5px;
+           pose degrees keep the 0.02 default (0.02° ≈ 0.2px at radius 2wu) */
+        for (let i = 0; i < RING_N; i++) {
+          CONV_EPS["fs" + i] = 0.001;
+          CONV_EPS["fy" + i] = 0.002;
+        }
 
         function resize() {
           renderer.setSize(innerWidth, innerHeight, false);
@@ -4841,30 +4974,18 @@
                   f: K0.f,
                   lk: K0.lk,
                   w: K0.w,
+                  pl: K0.pl,
                   bgR: K0.bgC.r,
                   bgG: K0.bgC.g,
                   bgB: K0.bgC.b,
+                  ...formChannelsOf(K0.formR),
                 }
             : targetAt(scrollY);
           if (staticMode) Object.assign(cur, tgt, { t: 0, o: 1 });
           else {
             const f = cfg.OBJ_SMOOTH;
             let converged = true;
-            for (const ch of [
-              "x",
-              "y",
-              "s",
-              "t",
-              "o",
-              "p",
-              "r",
-              "f",
-              "lk",
-              "w",
-              "bgR",
-              "bgG",
-              "bgB",
-            ]) {
+            for (const ch of CHANNELS) {
               const d = tgt[ch] - cur[ch];
               if (Math.abs(d) > (CONV_EPS[ch] ?? 0.02)) {
                 cur[ch] += d * f;
@@ -4973,7 +5094,35 @@
                 precQ.setFromAxisAngle(ringPrecAxes[i], precAngle[i]),
               );
             ringQ.setFromAxisAngle(ringSpinAxis, spinAngle[i]);
-            r.quaternion.copy(ringQ).multiply(ringBaseQ[i]);
+            ringLiveQ.copy(ringQ).multiply(ringBaseQ[i]);
+            /* formation compose: authored pose (same Euler recipe as construction)
+               revolving in-plane on the SAME frozen-able spinAngle accumulator; slerp
+               weight = alignment channel. fa=0 (nest/orbit) reproduces the pure
+               tumble path bit-for-bit. */
+            ringFormE.set(
+              Math.PI / 2 - THREE.MathUtils.degToRad(cur["ft" + i]),
+              THREE.MathUtils.degToRad(cur["fw" + i]),
+              THREE.MathUtils.degToRad(cur["fl" + i]),
+            );
+            ringFormQ
+              .setFromEuler(ringFormE)
+              .multiply(
+                ringPlaneQ.setFromAxisAngle(
+                  RING_PLANE_AXIS,
+                  spinAngle[i] * cfg.ALIGNED_SPIN_MUL,
+                ),
+              );
+            r.quaternion
+              .copy(ringLiveQ)
+              .slerp(ringFormQ, smooth01(0, 1, cur.fa));
+            /* R2 gate: per-ring y offsets bloom only once alignment is complete */
+            const formGate = smooth01(
+              cfg.FORM_GATE[0],
+              cfg.FORM_GATE[1],
+              cur.fa,
+            );
+            r.position.y = cur["fy" + i] * formGate;
+            r.scale.setScalar(cur["fs" + i]);
           });
           if (coreReflectLive) {
             /* ease toward the island's sampled palette (~0.5s time constant); the
