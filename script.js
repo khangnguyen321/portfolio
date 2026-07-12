@@ -1,0 +1,671 @@
+      /* ═══ GYRE CONFIG ═══
+   The persistent WebGL object (three optical-glass bands around an organic mineral core) on a fixed
+   canvas behind the page. Choreography: 9 keyframes, hero → footer, 2.72 total turns,
+   pure function of scrollY — plus per-section viewpoint (p/r/f) and environment
+   (lk/w/bg) channels, and a free-running slow ring loop (time-based, not scroll).
+   Rungs: L0 full spec · L1 ≤1080/watchdog (no dispersion,
+   lower DPR) · L2 ≤920 (no transmission, lower DPR) · L3 no-WebGL
+   (SVG fallback stays visible). Motion and scroll response remain active otherwise. */
+      const OBJ_CFG = {
+        /* — object — */
+        /* 4 tall thin "tape band" rings (BAND_DEPTH = axial height 0.30, BAND_WIDTH
+           = radial thickness 0.06) nested as disjoint spherical shells. A tumbling
+           ring sweeps distances [R−w/2, sqrt((R+w/2)²+(d/2)²)] ≈ [R−0.03, R+0.037];
+           the 0.10 radius steps keep every adjacent pair clear at EVERY orientation
+           — the rings can never touch or pass through each other — while the whole
+           nest hugs the island (silhouette radius ≈1.5). */
+        RING_TILTS_DEG: [10, 40, 70, 100],
+        RING_YAW_OFFSET_DEG: 45,
+        RING_RADII: [1.6, 1.7, 1.8, 1.9],
+        RING_TUBE: [0.105, 0.105, 0.105, 0.105],
+        RING_BAND_WIDTH: [0.06, 0.06, 0.06, 0.06],
+        RING_BAND_DEPTH: [0.3, 0.3, 0.3, 0.3],
+        RING_ASPECT_Y: [1, 1, 1, 1] /* 1 = true circles (values <1 squash vertically) */,
+        RING_WOBBLE: [0, 0, 0, 0] /* 0 = perfectly round bands, no radial warble */,
+        HERO_POSE: { x: 70, y: 50, s: 84 },
+        ROCK_COLOR: "#343830",
+        ROCK_SHADE_DARK: "#171a18",
+        ROCK_SHADE_LIGHT: "#77796a",
+        ROCK_ROUGH: 0.92,
+        ROCK_METAL: 0.02,
+        GLASS_ROUGH: 0.03 /* polished clear-water read; seasons modulate at runtime */,
+        GLASS_IOR: 1.47,
+        GLASS_TINT: "#F4FAFC",
+        DISPERSION: 0.24 /* visible prismatic edges on the ribbons, per reference */,
+        /* — seasons — */
+        SEASON_S: 14 /* seconds per season; 4 seasons = one 56s loop */,
+        SEASON_FADE_S: 3 /* crossfade window at each season boundary */,
+        /* — light — */
+        KEY_INT: 1.0,
+        FILL_INT: 0.3,
+        ACCENT_RIM_COLOR: "#E99A00",
+        ACCENT_RIM_INT: 0.35,
+        CTA_GLINT_TRIM_DEG: 0 /* additive yaw trim at K7 to land the amber glint */,
+        /* — choreography — */
+        /* per-keyframe channels beyond x/y/s/t/o:
+       p/r  = pitch/roll viewpoint offsets (deg) — object-space rotation, reads as a
+              per-section camera-orbit change without touching the placement math
+       f    = camera FOV (deg) — zoom/dolly feel; placement math self-compensates
+       lk   = light-rig intensity multiplier (key/fill/ambient)
+       w    = warmth 0→1 — amber rim boost + light-pool tint; peaks at #cta (glint)
+       bg   = backdrop plane color. Light-graphite family (≤~4% lightness deltas so
+              panel edges don't seam against the static CSS --bg) EXCEPT the guarded
+              #how ink band (#22262A): its ramps are compressed into inter-section
+              padding by av-guard keyframes and the DOM flips body.sec-ink in sync
+              (see updateScrollMotion). K0 bg MUST equal --bg.
+       pl   = light-pool strength 0→1 — backdrop brightens in a soft plateau pool
+              under the object (tint = white→amber by w)
+       form = ring formation preset name (FORMATIONS table); resolved at boot to
+              formR, per-ring params interpolate numerically between keyframes
+       av   = per-keyframe ANCHOR_VH override — guard keyframes use it to pin color
+              ramps inside inter-section padding (dark never under readable copy) */
+        KEYFRAMES: [
+          /* anchor '' = scroll 0; y>100 exits below.
+             Authored path: hero (vertical center, right of the left-aligned copy)
+             → ZOOM IN at #statement → LEFT phase (#build orbit, #work gyro) →
+             RIGHT phase (#approach disc → #how LADDER inside the guarded ink band
+             → #experience disc) → nest + amber warmth at #cta → ZOOM OUT at footer.
+             Formation adjacency chain nest·nest·orbit·gyro·disc·ladder·ladder·
+             disc·disc·nest·nest satisfies safety rules R1/R3 (see FORMATIONS). */
+          {
+            a: "",
+            form: "nest",
+            x: 70,
+            y: 50,
+            s: 84,
+            t: 0.0,
+            o: 1.0,
+            p: -4,
+            r: -5,
+            f: 34,
+            lk: 1.0,
+            w: 0,
+            pl: 0.1,
+            bg: "#E8EDEF",
+          },
+          {
+            a: "#statement",
+            form: "nest",
+            x: 62,
+            y: 50,
+            s: 132,
+            t: 0.2,
+            o: 0.9,
+            p: -18,
+            r: 9,
+            f: 28,
+            lk: 0.92,
+            w: 0,
+            pl: 0.14,
+            bg: "#E4E9EC",
+          },
+          {
+            a: "#build",
+            form: "orbit",
+            /* s compensates orbit's ×1.58 footprint vs the fixed BASE_DIAM */
+            x: 20,
+            y: 50,
+            s: 52,
+            t: 0.64,
+            o: 1.0,
+            p: 22,
+            r: -12,
+            f: 34,
+            lk: 1.05,
+            w: 0,
+            pl: 0.16,
+            bg: "#DFE5E4",
+          },
+          {
+            a: "#work",
+            form: "gyro",
+            x: 22,
+            y: 48,
+            s: 64,
+            t: 1.05,
+            o: 0.88,
+            p: -28,
+            r: 16,
+            f: 32,
+            lk: 0.88,
+            w: 0,
+            pl: 0.18,
+            bg: "#D9DEE0",
+          },
+          {
+            a: "#approach",
+            form: "disc",
+            x: 80,
+            y: 50,
+            s: 70,
+            t: 1.42,
+            o: 0.86,
+            p: 26,
+            r: -18,
+            f: 33,
+            lk: 0.95,
+            w: 0,
+            pl: 0.14,
+            bg: "#E2E6E3",
+          },
+          {
+            /* ink-band GUARD IN: still light at 1.15vh above #how — the dark ramp
+               lives entirely in the #approach→#how padding corridor */
+            a: "#how",
+            av: 1.15,
+            form: "ladder",
+            x: 78,
+            y: 52,
+            s: 90,
+            t: 1.7,
+            o: 1.0,
+            p: -6,
+            r: 10,
+            f: 31,
+            lk: 1.0,
+            w: 0,
+            pl: 0.2,
+            bg: "#DDE2E2",
+          },
+          {
+            /* the INK moment: ladder stack over deep graphite, brightest pool;
+               lk 1.18 keeps the object luminous against the dark band */
+            a: "#how",
+            av: 0.35,
+            form: "ladder",
+            x: 78,
+            y: 52,
+            s: 96,
+            t: 1.82,
+            o: 1.0,
+            p: -6,
+            r: 8,
+            f: 30,
+            lk: 1.18,
+            w: 0,
+            pl: 0.3,
+            bg: "#22262A",
+          },
+          {
+            /* dark HOLD through the #how→#experience padding, rings re-coalesce */
+            a: "#experience",
+            av: 1.15,
+            form: "disc",
+            x: 74,
+            y: 55,
+            s: 70,
+            t: 2.02,
+            o: 0.9,
+            p: 10,
+            r: -4,
+            f: 34,
+            lk: 1.12,
+            w: 0,
+            pl: 0.26,
+            bg: "#22262A",
+          },
+          {
+            /* GUARD OUT: back to light before #experience copy is readable */
+            a: "#experience",
+            av: 0.6,
+            form: "disc",
+            x: 74,
+            y: 55,
+            s: 62,
+            t: 2.12,
+            o: 0.78,
+            p: 32,
+            r: -10,
+            f: 36,
+            lk: 0.85,
+            w: 0,
+            pl: 0.14,
+            bg: "#E6E9E4",
+          },
+          {
+            a: "#cta",
+            form: "nest",
+            /* warm paper + w 1.0: the pool ambers itself via the tint coupling */
+            x: 64,
+            y: 50,
+            s: 72,
+            t: 2.45,
+            o: 1.0,
+            p: -20,
+            r: 14,
+            f: 33,
+            lk: 1.02,
+            w: 1.0,
+            pl: 0.22,
+            bg: "#EDEBE2",
+          },
+          {
+            a: "footer",
+            form: "nest",
+            x: 50,
+            y: 54,
+            s: 38,
+            t: 2.72,
+            o: 0.85,
+            p: 0,
+            r: 0,
+            f: 40,
+            lk: 0.95,
+            w: 0.3,
+            pl: 0.1,
+            bg: "#E8EDEF",
+          },
+        ],
+        ANCHOR_VH: 0.6 /* keyframe fires when anchor top hits 60% viewport */,
+        PITCH_RATIO: 0.35,
+        PITCH_CLAMP_DEG: 18,
+        /* — per-ring continuous loop: constant time-based rotation about each ring's own
+       axis, ring B counter-rotating (negative PERIOD_S), slow full 360° revolutions.
+       The angle accumulates incrementally, so disabling spin (watchdog drop-2, ≤920
+       rung) freezes it in place — no snap back to PHASE. PHASE is the initial angle
+       only; the K7 amber glint is now carried by the environment channel (w), not a
+       ring phase lock. RING_LOOP_ON is the runtime kill switch — every branch that
+       must let the loop park sets it false. — */
+        RING_LOOP: [
+          /* each ring's spin AXIS itself precesses slowly around PRECESS_AXIS —
+             the tumble direction keeps changing (never just forward/backward),
+             while both angles accumulate incrementally so kills still freeze */
+          {
+            PERIOD_S: 24,
+            AXIS: [0.94, 0.33, 0],
+            PHASE: 0,
+            PRECESS_S: 68,
+            PRECESS_AXIS: [0, 1, 0],
+          } /* ring A: clearly visible rotation */,
+          {
+            PERIOD_S: -31,
+            AXIS: [0, 0.29, 0.96],
+            PHASE: 18,
+            PRECESS_S: -56,
+            PRECESS_AXIS: [1, 0, 0.2],
+          } /* ring B: faster counter-rotation */,
+          {
+            PERIOD_S: 35,
+            AXIS: [0.38, 0.86, 0.34],
+            PHASE: -12,
+            PRECESS_S: 90,
+            PRECESS_AXIS: [0.2, 0, 1],
+          } /* ring C: oblique orbit */,
+          {
+            PERIOD_S: -41,
+            AXIS: [0.6, -0.52, 0.61],
+            PHASE: 42,
+            PRECESS_S: -76,
+            PRECESS_AXIS: [0.7, 0.7, 0],
+          } /* ring D: diagonal counter-tumble */,
+        ],
+        RING_LOOP_ON: true,
+        /* — per-section ring FORMATIONS: the one object evolves instead of new objects.
+       Each keyframe names a formation (form:'nest'|...); boot resolves it to formR and
+       targetAt interpolates the RESOLVED per-ring params, so mid-scroll poses blend
+       continuously. Channels per ring: scale (fs), y offset (fy), tilt/yaw/roll pose
+       (ft/fw/fl). fa = alignment 0→1: 0 keeps the free RING_LOOP tumble, 1 holds the
+       authored pose (still revolving in-plane on the SAME spinAngle accumulator, so
+       every kill switch freezes formations exactly like the tumble).
+       SAFETY (audited invariants):
+       R1 — every formation keeps s ≥ 1 and non-decreasing in ring index, so adjacent
+            swept shells stay disjoint at every interpolated pose;
+       R2 — per-ring y offsets only apply once fa ≥ FORM_GATE (flat rings clear each
+            other radially — s uniform — and clear the island: every flat-ring point
+            sits ≥ inner radius 1.57 > the landmass's measured 1.55 max lateral
+            extent; the keyed content's full 2.10 reach is the swan's flight arc,
+            which rings legitimately cross in depth on the flat billboard);
+       R3 — formations with distinct per-ring y (ladder) may only be keyframe-adjacent
+            to flat aligned formations (disc) — the "flat corridor". — */
+        FORMATIONS: {
+          nest: {
+            a: 0,
+            s: [1, 1, 1, 1],
+            y: [0, 0, 0, 0],
+            tilt: [10, 40, 70, 100],
+            yaw: [0, 45, 90, 135],
+            roll: [-5, 8, -4, 6],
+          } /* ≡ construction pose — the zero-visual-change identity */,
+          orbit: {
+            a: 0,
+            s: [1.15, 1.3, 1.45, 1.6],
+            y: [0, 0, 0, 0],
+            tilt: [10, 40, 70, 100],
+            yaw: [0, 45, 90, 135],
+            roll: [-5, 8, -4, 6],
+          } /* nest expanded into separated free-tumbling orbits */,
+          gyro: {
+            a: 1,
+            s: [1, 1, 1, 1],
+            y: [0, 0, 0, 0],
+            tilt: [0, 90, 90, 48],
+            yaw: [0, 0, 90, 45],
+            roll: [0, 0, 0, 0],
+          } /* aligned toward orthogonal axes — gyroscope/instrument read */,
+          disc: {
+            a: 1,
+            s: [1.06, 1.06, 1.06, 1.06],
+            y: [-0.12, -0.12, -0.12, -0.12],
+            tilt: [0, 0, 0, 0],
+            yaw: [0, 0, 0, 0],
+            roll: [0, 0, 0, 0],
+          } /* flat co-planar ground rings, slight drop */,
+          ladder: {
+            a: 1,
+            s: [1, 1, 1, 1] /* MUST stay uniform — R2's radial fallback */,
+            y: [1.05, 0.35, -0.35, -1.05],
+            tilt: [0, 0, 0, 0],
+            yaw: [0, 0, 0, 0],
+            roll: [0, 0, 0, 0],
+          } /* vertical stack through the island */,
+        },
+        FORM_GATE: [0.97, 1.0] /* smoothstep window on fa that gates y offsets (R2) */,
+        ALIGNED_SPIN_MUL: 0.4 /* in-plane revolve rate of aligned poses (rides spinAngle) */,
+        WARM_RIM_MULT: 3.0 /* rim intensity multiplier at w=1 (K7 amber moment) */,
+        /* — rock instrumentation (addendum A2): PCB traces walking the facets + engraved
+       glyphs; amber only on the 3 upper-hemisphere solder dots — */
+        ROCK_TRACES: 0,
+        TRACE_COLOR: "#DFE2E5",
+        TRACE_OPACITY: 0.55,
+        TRACE_LIFT: 0.015,
+        DOT_AMBER_COUNT: 3,
+        GLYPH_OPACITY: 0.45,
+        GLYPH_SIZE: 0.3,
+        PULSE_AMP: 0.12,
+        PULSE_AMP_AMBER: 0.15,
+        PULSE_PERIOD_S: 6,
+        PULSE_STAGGER_S: 0.8,
+        OBJ_SMOOTH: 0.1,
+        IDLE_DRIFT_DEG: 4,
+        IDLE_PERIOD_S: 10,
+        ENTRANCE_MS: 1100,
+        ENTRANCE_SCALE_FROM: 0.9,
+        ENTRANCE_YAW_FROM_DEG: -6,
+        /* — legibility contract — */
+        ROCK_SAFE_X: 0.62 /* rock core stays right of this at ≥1080px in hero */,
+        /* — performance — */
+        DPR_MAX: 1.75,
+        FPS_FLOOR: 28,
+        PROBE_MS: 3000,
+        overrides: {
+          "(max-width:1080px)": { DPR_MAX: 1.5, DISPERSION: 0 },
+          "(max-width:920px)": { DPR_MAX: 1.25, TRANSMISSION: false },
+          "(max-width:620px)": { DPR_MAX: 1 },
+        },
+      };
+
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      /* ═══ PRELOADER ═══ */
+      (function () {
+        const pct = document.getElementById("loader-pct");
+        let p = 0;
+        let complete = false;
+        const iv = setInterval(
+          () => {
+            p = Math.min(p + Math.floor(Math.random() * 7) + 3, 94);
+            pct.textContent = p + "%";
+          },
+          reduceMotion ? 16 : 46,
+        );
+        const fallbackTimer = setTimeout(finish, 1800);
+        document.addEventListener("gyre:ready", finish, { once: true });
+
+        function finish() {
+          if (complete) return;
+          complete = true;
+          clearInterval(iv);
+          clearTimeout(fallbackTimer);
+          pct.textContent = "100%";
+          setTimeout(done, reduceMotion ? 0 : 70);
+        }
+        function done() {
+          document.getElementById("loader").classList.add("done");
+          heroIn();
+        }
+      })();
+
+      /* ═══ HERO ENTRANCE ═══ */
+      function heroIn() {
+        document.getElementById("hero")?.classList.add("hero-ready");
+      }
+
+      /* ═══ NAV + SCROLL PROGRESS ═══ */
+      const headerEl = document.getElementById("header");
+      const navLinks = Array.from(document.querySelectorAll("nav.links a"));
+      const navSections = navLinks
+        .map((link) => ({
+          link,
+          section: document.querySelector(link.getAttribute("href")),
+        }))
+        .filter((item) => item.section);
+      const railLinks = Array.from(document.querySelectorAll(".rail a"))
+        .map((link) => ({
+          link,
+          section: document.querySelector(link.getAttribute("href")),
+        }))
+        .filter((item) => item.section);
+      /* sec-ink: DOM side of the #how ink band. Thresholds are the MIDPOINTS of the
+         WebGL bg ramps authored on the av-guard keyframes — in: (1.15+0.35)/2 = 0.75
+         above #how; out: (1.15+0.60)/2 = 0.875 above #experience — so the class
+         flips inside inter-section padding while cur.bg lerps around it. Keep these
+         coupled to the keyframe av values in OBJ_CFG. */
+      const inkHowEl = document.getElementById("how");
+      const inkExpEl = document.getElementById("experience");
+      const INK_HYST = 48; /* px — scroll jitter can't strobe the page */
+      let inkOn = false;
+      let scrollTicking = false;
+      function updateScrollMotion() {
+        const maxScroll = Math.max(
+          document.documentElement.scrollHeight - innerHeight,
+          1,
+        );
+        headerEl.style.setProperty(
+          "--scroll-progress",
+          Math.min(Math.max(scrollY / maxScroll, 0), 1).toFixed(4),
+        );
+        headerEl.classList.toggle("scrolled", scrollY > 40);
+
+        const marker = scrollY + innerHeight * 0.38;
+        let active = null;
+        navSections.forEach((item) => {
+          if (item.section.offsetTop <= marker) active = item;
+        });
+        navSections.forEach((item) => {
+          const isActive = item === active;
+          item.link.classList.toggle("active", isActive);
+          if (isActive) item.link.setAttribute("aria-current", "location");
+          else item.link.removeAttribute("aria-current");
+        });
+        let railActive = null;
+        railLinks.forEach((item) => {
+          if (item.section.offsetTop <= marker) railActive = item;
+        });
+        railLinks.forEach((item) => {
+          const isActive = item === railActive;
+          item.link.classList.toggle("active", isActive);
+          if (isActive) item.link.setAttribute("aria-current", "location");
+          else item.link.removeAttribute("aria-current");
+        });
+        if (inkHowEl && inkExpEl) {
+          const inkIn = inkHowEl.offsetTop - 0.75 * innerHeight;
+          const inkOut = inkExpEl.offsetTop - 0.875 * innerHeight;
+          const on = inkOn
+            ? scrollY > inkIn - INK_HYST && scrollY < inkOut + INK_HYST
+            : scrollY > inkIn + INK_HYST && scrollY < inkOut - INK_HYST;
+          if (on !== inkOn) {
+            inkOn = on;
+            document.body.classList.toggle("sec-ink", inkOn);
+          }
+        }
+        scrollTicking = false;
+      }
+      function requestScrollMotion() {
+        if (scrollTicking) return;
+        scrollTicking = true;
+        requestAnimationFrame(updateScrollMotion);
+      }
+      window.addEventListener("scroll", requestScrollMotion, { passive: true });
+      window.addEventListener("resize", requestScrollMotion, { passive: true });
+      updateScrollMotion();
+
+      /* ═══ COPY EMAIL ═══ */
+      document
+        .getElementById("copy-email")
+        .addEventListener("click", function () {
+          const btn = this;
+          const text = "hk.nguyen91@gmail.com";
+          const status = btn.querySelector(".copied");
+          function flash(message) {
+            status.textContent = message;
+            btn.classList.add("show");
+            setTimeout(() => btn.classList.remove("show"), 1600);
+          }
+          function legacyCopy() {
+            const input = document.createElement("textarea");
+            input.value = text;
+            input.setAttribute("readonly", "");
+            input.style.position = "fixed";
+            input.style.opacity = "0";
+            document.body.appendChild(input);
+            input.select();
+            let copied = false;
+            try {
+              copied = document.execCommand("copy");
+            } catch (_) {
+              copied = false;
+            }
+            input.remove();
+            flash(copied ? "Copied ✓" : "Copy failed");
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard
+              .writeText(text)
+              .then(() => flash("Copied ✓"))
+              .catch(legacyCopy);
+          } else {
+            legacyCopy();
+          }
+        });
+
+      /* ═══ SCROLL REVEALS ═══ */
+      const revealEls = Array.from(document.querySelectorAll(".reveal"));
+      const staggerSelectors = [
+        ".svc-grid",
+        ".work-grid",
+        ".steps",
+        "#experience .content",
+      ];
+      staggerSelectors.forEach((selector) => {
+        document.querySelectorAll(selector).forEach((group) => {
+          Array.from(group.children)
+            .filter((el) => el.classList.contains("reveal"))
+            .forEach((el, index) => {
+              el.style.setProperty(
+                "--reveal-delay",
+                `${Math.min(index, 5) * 85}ms`,
+              );
+            });
+        });
+      });
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        revealEls.forEach((el) => el.classList.add("in"));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("in");
+              io.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+        );
+        revealEls.forEach((el) => io.observe(el));
+      }
+
+      /* ═══ LOGO VIDEO — kn monogram in the header on a fixed cadence.
+   Variant pick: VP9-alpha WebM (.alpha — transparent line-art) where supported,
+   else the mp4 on its black plate (.chip); a failing webm demotes itself to the
+   chip once. PERIOD_MS is start-to-start: the ~5s animation plays, rests on its
+   final frame (which matches the first), and begins again 7s after it last
+   started. The "/khang" text remains until first frame data exists; total media
+   failure restores it. Data Saver never fetches the decorative video. ═══ */
+      const LOGO_CFG = { PERIOD_MS: 7000 };
+      (function () {
+        const link = document.querySelector(".logo");
+        const lv = link ? link.querySelector(".logo-video") : null;
+        if (!lv) return;
+        const saveData = !!(
+          navigator.connection && navigator.connection.saveData === true
+        );
+        if (saveData || reduceMotion) {
+          lv.remove();
+          return;
+        }
+        lv.addEventListener("loadeddata", () => link.classList.add("video-on"));
+        lv.addEventListener("error", () => {
+          if (lv.classList.contains("alpha")) {
+            /* webm failed → mp4 chip; text covers the reload gap */
+            link.classList.remove("video-on");
+            attach(false);
+            return;
+          }
+          link.classList.remove("video-on");
+          lv.remove();
+        });
+        function restart() {
+          /* hidden tabs defer the restart until the tab returns (file convention: nothing decodes unseen) */
+          if (!lv.isConnected) return;
+          if (document.hidden) {
+            document.addEventListener("visibilitychange", restart, {
+              once: true,
+            });
+            return;
+          }
+          lv.currentTime = 0;
+          lv.play().catch(() => {});
+        }
+        lv.addEventListener("ended", () => {
+          const wait = Math.max(400, LOGO_CFG.PERIOD_MS - lv.duration * 1000);
+          setTimeout(restart, wait);
+        });
+        document.addEventListener("visibilitychange", () => {
+          if (!lv.isConnected) return;
+          if (document.hidden) {
+            if (!lv.paused) lv.pause();
+          } else if (lv.paused && !lv.ended && lv.readyState >= 2)
+            lv.play().catch(() => {});
+        });
+        function attach(alpha) {
+          lv.classList.remove("alpha", "chip");
+          lv.classList.add(alpha ? "alpha" : "chip");
+          lv.preload = "auto";
+          lv.src = alpha ? lv.dataset.webm : lv.dataset.src;
+          const pr = lv.play();
+          if (pr && pr.catch)
+            pr.catch(() => {
+              if (lv.readyState >= 1) lv.currentTime = 0.001;
+              else
+                lv.addEventListener(
+                  "loadedmetadata",
+                  () => {
+                    lv.currentTime = 0.001;
+                  },
+                  { once: true },
+                ); /* blocked: static mark until first gesture */
+              window.addEventListener(
+                "pointerdown",
+                () => {
+                  if (lv.isConnected) lv.play().catch(() => {});
+                },
+                { once: true },
+              );
+            });
+        }
+        attach(
+          !!(lv.dataset.webm && lv.canPlayType('video/webm; codecs="vp9"')),
+        );
+      })();
