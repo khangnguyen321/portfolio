@@ -3443,18 +3443,44 @@
           add(24, 24, "#26282B", 0, -13, 0, 0, -Math.PI / 2); /* dark floor */
           add(4, 14, "#26282B", -4, 2, -9, 0.3); /* dark strips */
           add(3, 12, "#26282B", 7, 4, -8, -0.5);
-          add(
-            7,
-            7,
-            new THREE.Color(cfg.ACCENT_RIM_COLOR).multiplyScalar(
-              cfg.ACCENT_RIM_INT * 0.6,
-            ),
-            4,
-            -9,
-            6,
-            -Math.PI / 5,
-            -Math.PI / 3,
-          );
+          /* neon SHADE reflections — three large graded panels (amber / cyan /
+             blue). The chrome sweeps through them as broad shaded color bands
+             baked into the env map, replacing the retired core-reflect point
+             light whose sampled color always read as a localized dot. */
+          const addShade = (hex, boost, w, h, x, y, z, ry = 0, rx = 0) => {
+            const cv = document.createElement("canvas");
+            cv.width = 4;
+            cv.height = 128;
+            const g = cv.getContext("2d");
+            const grade = g.createLinearGradient(0, 0, 0, 128);
+            grade.addColorStop(0, hex);
+            grade.addColorStop(0.42, hex); /* bright neon core */
+            grade.addColorStop(1, "#04060A"); /* falls off into the studio darks */
+            g.fillStyle = grade;
+            g.fillRect(0, 0, 4, 128);
+            const tex = new THREE.CanvasTexture(cv);
+            tex.colorSpace = THREE.SRGBColorSpace;
+            const m = new THREE.Mesh(
+              new THREE.PlaneGeometry(w, h),
+              new THREE.MeshBasicMaterial({
+                map: tex,
+                color: new THREE.Color().setScalar(boost),
+              }),
+            );
+            m.position.set(x, y, z);
+            m.rotation.y = ry;
+            m.rotation.x = rx;
+            env.add(m);
+          };
+          /* all three live in the FRONT hemisphere (z > 0) — face-on glass
+             reflects mirrored directions from behind the camera, so back-wall
+             panels only ever show up as grazing-edge slivers */
+          /* boosts run hot on purpose: face-on clear glass only returns ~4-6% of
+             the env (fresnel), and the white key/fill panels otherwise drown the
+             color — the neon must win its share of the mirror, not the intensity */
+          addShade("#FFB347", 8.5, 13, 12, 4, -9, 6, -Math.PI / 5, -Math.PI / 3); /* neon amber */
+          addShade("#3DF2FF", 7.0, 13, 11, -6, 2, 7, Math.PI / 3); /* neon cyan */
+          addShade("#3D6BFF", 8.2, 12, 13, 9, 3, 5, -Math.PI / 2.8); /* neon blue */
           const pmrem = new THREE.PMREMGenerator(renderer);
           const tex = pmrem.fromScene(env, 0.04).texture;
           pmrem.dispose();
@@ -3541,43 +3567,34 @@
           return geometry;
         }
 
-        /* alternating finish — even rings: shining clear glass (transmission);
-           odd rings: polished chrome. Chrome is OPAQUE, so it joins the
-           transmission buffer and the glass rings visibly refract it: the two
-           finishes read as one mixed material system. Color story on the glass
-           still comes from the core-reflect light + dispersion, not a body tint. */
+        /* unified finish — all four rings: shining clear glass (transmission),
+           one continuous optical set. The wet clearcoat carries the reflections:
+           the neon shade panels in the environment (amber/cyan/blue graded
+           bands) sweep across the glass as broad shaded color, never a body
+           tint or a point-light dot. */
         const glassEdgeTints = ["#DCE9EF", "#E3E6EC", "#E8ECEC", "#DFE8EE"];
-        const glassMats = cfg.RING_RADII.map((_, i) =>
-          i % 2
-            ? new THREE.MeshPhysicalMaterial({
-                color: "#F2F5F7",
-                metalness: 1,
-                /* brushed-soft blur so face-on ribbons average the env into
-                   silver instead of mirroring one dark strip as a black band;
-                   the sharp clearcoat keeps the "shining" highlights */
-                roughness: 0.16,
-                clearcoat: 1,
-                clearcoatRoughness: 0.03,
-                envMapIntensity: 2.1,
-              })
-            : new THREE.MeshPhysicalMaterial({
-                color: "#EDF2F4",
-                metalness: 0,
-                roughness: cfg.GLASS_ROUGH + i * 0.006,
-                transmission: useTransmission ? 1 : 0,
-                transparent: true,
-                opacity: useTransmission ? 1 : 0.48,
-                ior: cfg.GLASS_IOR,
-                thickness: 0.55 + i * 0.05,
-                clearcoat: 1,
-                clearcoatRoughness: 0.008 /* tighter coat = wetter, shinier highlights */,
-                envMapIntensity: 1.75 + i * 0.14,
-                attenuationColor: glassEdgeTints[i],
-                attenuationDistance: 2.6,
-                dispersion: useTransmission ? cfg.DISPERSION : 0,
-                side: THREE.DoubleSide,
-                depthWrite: false,
-              }),
+        const glassMats = cfg.RING_RADII.map(
+          (_, i) =>
+            new THREE.MeshPhysicalMaterial({
+              color: "#EDF2F4",
+              metalness: 0,
+              roughness: cfg.GLASS_ROUGH + i * 0.006,
+              transmission: useTransmission ? 1 : 0,
+              transparent: true,
+              opacity: useTransmission ? 1 : 0.48,
+              ior: cfg.GLASS_IOR,
+              thickness: 0.55 + i * 0.05,
+              clearcoat: 1,
+              clearcoatRoughness: 0.008 /* tighter coat = wetter, shinier highlights */,
+              specularIntensity: 1.5 /* lifts face-on reflection so the neon
+                 shade bands read across the band, not just at grazing edges */,
+              envMapIntensity: 1.75 + i * 0.14,
+              attenuationColor: glassEdgeTints[i],
+              attenuationDistance: 2.6,
+              dispersion: useTransmission ? cfg.DISPERSION : 0,
+              side: THREE.DoubleSide,
+              depthWrite: false,
+            }),
         );
 
         const rings = cfg.RING_RADII.map((radius, i) => {
@@ -3620,13 +3637,6 @@
         const ringPlaneQ = new THREE.Quaternion();
         const ringFormE = new THREE.Euler();
         const RING_PLANE_AXIS = new THREE.Vector3(0, 0, 1);
-
-        /* the core's palette reaches the rings as LIGHT, not a material tint: a
-           point light parked at the island center colors only the glass surfaces
-           rotating past it — a localized moving glint, never the whole ring */
-        const coreReflectLight = new THREE.PointLight(0xffffff, 0, 6.5, 1.7);
-        coreReflectLight.position.set(0, 0, 0.55);
-        orientationGroup.add(coreReflectLight);
 
         /* Precision spherical cage: three graphite great-circle ribs create six large
            openings, with polished portal lips clarifying the cut-through silhouette. */
@@ -3938,7 +3948,6 @@
               );
               coreImageMaterial.uniforms.coreMap.value = texture;
               coreImageMaterial.uniforms.keyEnabled.value = 0;
-              sampleCoreReflect(texture.image); /* poster path reflects too */
               coreImage.visible = true;
               mineralCore.visible = false;
               coreAssetReady = true;
@@ -3968,59 +3977,6 @@
         coreVideoTexture.magFilter = THREE.LinearFilter;
         coreVideoTexture.generateMipmaps = false;
         let nextCoreFrameAt = 0;
-
-        /* ── core→ring color reflection: average the island's non-keyed pixels from a
-           16×16 downsample at a low cadence; the color feeds the core-reflect POINT
-           LIGHT (localized glints on the rotating glass), never a whole-ring tint ── */
-        const CORE_SAMPLE_MS = 450;
-        const CORE_REFLECT_INT = 3.2; /* point-light intensity once a sample is live */
-        const coreSampleCanvas = document.createElement("canvas");
-        coreSampleCanvas.width = coreSampleCanvas.height = 16;
-        const coreSampleCtx = coreSampleCanvas.getContext("2d", {
-          willReadFrequently: true,
-        });
-        const coreReflectTarget = new THREE.Color();
-        const coreReflectColor = new THREE.Color();
-        const coreReflectHSL = { h: 0, s: 0, l: 0 };
-        let coreReflectLive = false;
-        let nextCoreSampleAt = 0;
-        const sampleCoreReflect = (source) => {
-          try {
-            coreSampleCtx.drawImage(source, 0, 0, 16, 16);
-            const px = coreSampleCtx.getImageData(0, 0, 16, 16).data;
-            let r = 0, g = 0, b = 0, n = 0;
-            for (let i = 0; i < px.length; i += 4) {
-              /* the near-white key plate never votes — only the island itself */
-              if (px[i] > 225 && px[i + 1] > 225 && px[i + 2] > 225) continue;
-              r += px[i];
-              g += px[i + 1];
-              b += px[i + 2];
-              n++;
-            }
-            if (n < 8) return;
-            coreReflectTarget.setRGB(
-              r / n / 255,
-              g / n / 255,
-              b / n / 255,
-              THREE.SRGBColorSpace,
-            );
-            /* glass wants the core's HUE, not its darkness: normalize lightness and
-               lift saturation so the tint stays luminous through transmission */
-            coreReflectTarget.getHSL(coreReflectHSL, THREE.SRGBColorSpace);
-            coreReflectTarget.setHSL(
-              coreReflectHSL.h,
-              Math.min(1, coreReflectHSL.s * 1.35),
-              THREE.MathUtils.clamp(coreReflectHSL.l, 0.52, 0.7),
-              THREE.SRGBColorSpace,
-            );
-            if (!coreReflectLive) {
-              coreReflectColor.copy(coreReflectTarget);
-              coreReflectLive = true;
-            }
-          } catch (e) {
-            /* sampling must never break rendering */
-          }
-        };
 
         const coreVideo = document.createElement("video");
         coreVideo.muted = true;
@@ -4060,10 +4016,6 @@
           );
           coreVideoTexture.needsUpdate = true;
           nextCoreFrameAt = now + CORE_FRAME_MS;
-          if (now >= nextCoreSampleAt) {
-            sampleCoreReflect(coreVideoCanvas);
-            nextCoreSampleAt = now + CORE_SAMPLE_MS;
-          }
         };
         let videoCoreActivated = false;
         const activateVideoCore = () => {
@@ -4286,10 +4238,6 @@
           }),
         );
 
-        const seasonAtten = SEASONS.map((s) => new THREE.Color(s.glass.atten));
-        const seasonBody = SEASONS.map((s) => new THREE.Color(s.glass.body));
-        const seasonAttenMix = new THREE.Color();
-        const seasonBodyMix = new THREE.Color();
         const smooth01 = (a, b, x) => {
           const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
           return u * u * (3 - 2 * u);
@@ -4963,8 +4911,9 @@
         );
         scene.add(chromeGlintWarm);
         const spectralCyan = new THREE.PointLight(0x74e8ff, 4, 11, 2);
-        const spectralMagenta = new THREE.PointLight(0x9c88ff, 2.2, 10, 2);
-        scene.add(spectralCyan, spectralMagenta);
+        /* neon blue completes the amber/cyan/blue triad (was violet) */
+        const spectralBlue = new THREE.PointLight(0x3d6bff, 2.2, 10, 2);
+        scene.add(spectralCyan, spectralBlue);
         const AMB_INT = 0.35,
           KEY_BASE = 1.4 * cfg.KEY_INT; /* lk=1 reference intensities */
 
@@ -5338,14 +5287,6 @@
             r.position.y = cur["fy" + i] * formGate;
             r.scale.setScalar(cur["fs" + i]);
           });
-          if (coreReflectLive) {
-            /* ease toward the island's sampled palette (~0.5s time constant); the
-               glass picks it up as a moving glint from the core-reflect light */
-            coreReflectColor.lerp(coreReflectTarget, 1 - Math.exp(-dt / 500));
-            coreReflectLight.color.copy(coreReflectColor);
-            coreReflectLight.intensity = CORE_REFLECT_INT;
-          }
-
           const coreTime = idleClock / 1000;
           mineralCore.rotation.y =
             0.28 + 0.026 * Math.sin(coreTime * 0.19);
@@ -5372,19 +5313,10 @@
 
           /* ── four-season cycle: crossfade weights drive the core overlays, the
              ring streams, and the glass tint/roughness targets ── */
+          /* seasons drive the core overlays + ring particle streams only — the
+             glass body/attenuation stays fixed so the neon amber/cyan/blue shade
+             reflections own the ring color story (seasonal tint washed them out) */
           const sw = seasonWeights(coreTime);
-          seasonAttenMix.copy(seasonAtten[sw.i]).lerp(seasonAtten[sw.j], sw.blend);
-          seasonBodyMix.copy(seasonBody[sw.i]).lerp(seasonBody[sw.j], sw.blend);
-          const seasonRough =
-            SEASONS[sw.i].glass.rough * (1 - sw.blend) +
-            SEASONS[sw.j].glass.rough * sw.blend;
-          glassMats.forEach((m, k) => {
-            m.attenuationColor.copy(seasonAttenMix);
-            m.color.copy(seasonBodyMix);
-            /* roughness seasons apply to the GLASS rings only — chrome keeps its
-               fixed soft-mirror finish (seasonal mirror-sharpness reads as black) */
-            if (!(k % 2)) m.roughness = seasonRough + k * 0.006;
-          });
           SEASONS.forEach((s, si) => {
             const w = si === sw.i ? 1 - sw.blend : si === sw.j ? sw.blend : 0;
             updateCoreSeasonFx(coreSeasonFx[si], coreTime, w);
@@ -5412,14 +5344,16 @@
             object.position.y + Math.sin(glintPhase * .61) * 2.8,
             3.4,
           );
-          spectralMagenta.position.set(
+          spectralBlue.position.set(
             object.position.x + Math.cos(-glintPhase * .51) * 3.4,
             object.position.y + Math.sin(glintPhase * .39 + 2.2) * 3.1,
             3.1,
           );
           glassMats.forEach((mat, i) => {
+            /* hotter sweep than the old chrome mix — fresnel-limited glass needs
+               more env energy for the neon shade bands to visibly shine */
             const sweep = 0.5 + 0.5 * Math.sin(glintPhase * 2.1 + i * 2.05);
-            mat.envMapIntensity = 1.45 + sweep * 0.65;
+            mat.envMapIntensity = 1.9 + sweep * 0.9;
           });
 
           /* per-section environment: backdrop tone + light pool + light-rig intensity
