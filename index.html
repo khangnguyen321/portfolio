@@ -3133,6 +3133,12 @@
           k.bgC = new THREE.Color(k.bg || PAGE_BG);
         });
         const BG0 = new THREE.Color(PAGE_BG);
+        /* light-pool tint endpoints + per-frame scratch (linear working space, same
+           as every bgC color — the despill mirrors these values term-for-term) */
+        const POOL_NEUTRAL = new THREE.Color("#FFFFFF");
+        const POOL_WARM = new THREE.Color("#FFC98A");
+        const poolTint = new THREE.Color();
+        const poolColor = new THREE.Color();
 
         /* ── renderer — L4 (no WebGL) leaves the SVG fallback visible and exits.
         Probe support on a scratch canvas first: constructing WebGLRenderer on a
@@ -3173,13 +3179,47 @@
         const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
         camera.position.set(0, 0, 9);
 
-        /* opaque in-scene backdrop matched to --bg (toneMapped:false keeps it pixel-exact,
-     probe-verified). Required: transmission renders flat white over an empty canvas. */
+        /* opaque in-scene backdrop matched to --bg — now a minimal ShaderMaterial:
+     per-section tone (uBase) plus a soft "light pool" tracking the object
+     (uCenter/uRadius/uStrength). Plateau falloff (g ≡ 1 for d < 0.7R) keeps the
+     island's despill EXACT across its whole footprint. Raw ShaderMaterials skip
+     tone mapping (≡ the old toneMapped:false) but NOT output encoding — the
+     colorspace_fragment include keeps uStrength=0 byte-identical to the old
+     MeshBasicMaterial (probe-verified corner pixels). Required: transmission
+     renders flat white over an empty canvas and samples OPAQUE objects only —
+     transparent stays false. */
         const backdrop = new THREE.Mesh(
           new THREE.PlaneGeometry(400, 400),
-          new THREE.MeshBasicMaterial({
-            color: new THREE.Color(PAGE_BG),
-            toneMapped: false,
+          new THREE.ShaderMaterial({
+            transparent: false,
+            uniforms: {
+              uBase: { value: new THREE.Color(PAGE_BG) },
+              uPool: { value: new THREE.Color(PAGE_BG) },
+              uCenter: { value: new THREE.Vector2(0, 0) },
+              uRadius: { value: 1 },
+              uStrength: { value: 0 },
+            },
+            vertexShader: `
+              varying vec2 vXY;
+              void main() {
+                vXY = (modelMatrix * vec4(position, 1.0)).xy;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragmentShader: `
+              uniform vec3 uBase;
+              uniform vec3 uPool;
+              uniform vec2 uCenter;
+              uniform float uRadius;
+              uniform float uStrength;
+              varying vec2 vXY;
+              void main() {
+                float d = distance(vXY, uCenter);
+                float g = 1.0 - smoothstep(uRadius * 0.7, uRadius, d);
+                gl_FragColor = vec4(mix(uBase, uPool, uStrength * g), 1.0);
+                #include <colorspace_fragment>
+              }
+            `,
           }),
         );
         backdrop.position.z = -40;
@@ -5208,16 +5248,34 @@
             mat.envMapIntensity = 1.45 + sweep * 0.65;
           });
 
-          /* per-section environment: backdrop tone + light-rig intensity + amber warmth.
-       Backdrop stays OPAQUE (transmission renders flat white over transparency) —
-       its color shifting IS the visible section-atmosphere change. */
-          backdrop.material.color.setRGB(cur.bgR, cur.bgG, cur.bgB);
-          /* keep the billboard's despill matched to the live backdrop color */
-          coreImageMaterial.uniforms.pageBg.value.setRGB(
-            cur.bgR,
-            cur.bgG,
-            cur.bgB,
-          );
+          /* per-section environment: backdrop tone + light pool + light-rig intensity
+       + amber warmth. Backdrop stays OPAQUE (transmission renders flat white over
+       transparency) — its color shifting IS the visible section-atmosphere change.
+       The pool tracks the object (same cur.x/y/s the placement math uses, projected
+       at backdrop depth with the LIVE fov) and warms with the w channel. Everything
+       here is a pure function of parked channels — no new keepAlive source. */
+          const bd = backdrop.material.uniforms;
+          bd.uBase.value.setRGB(cur.bgR, cur.bgG, cur.bgB);
+          poolTint.copy(POOL_NEUTRAL).lerp(POOL_WARM, cur.w);
+          poolColor.setRGB(cur.bgR, cur.bgG, cur.bgB).lerp(poolTint, 0.5);
+          bd.uPool.value.copy(poolColor);
+          {
+            const bdDist = camera.position.z - backdrop.position.z;
+            const bdH =
+              2 * bdDist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+            bd.uCenter.value.set(
+              (cur.x / 100 - 0.5) * bdH * camera.aspect,
+              (0.5 - cur.y / 100) * bdH,
+            );
+            bd.uRadius.value = 0.55 * (cur.s / 100) * bdH;
+            bd.uStrength.value = cur.pl;
+          }
+          /* keep the billboard's despill matched to the live backdrop color AT THE
+       OBJECT: the plateau guarantees the island sits on mix(base, pool, pl)
+       exactly, so this mirrors the fragment term-for-term (same poolColor temp) */
+          coreImageMaterial.uniforms.pageBg.value
+            .setRGB(cur.bgR, cur.bgG, cur.bgB)
+            .lerp(poolColor, cur.pl);
           key.intensity = KEY_BASE * cur.lk;
           fill.intensity = cfg.FILL_INT * cur.lk;
           amb.intensity = AMB_INT * cur.lk;
@@ -5376,7 +5434,9 @@
             return { key: SEASONS[w.i].key, next: SEASONS[w.j].key, blend: +w.blend.toFixed(3) };
           })(),
           rim: rim.intensity,
-          bg: "#" + backdrop.material.color.getHexString().toUpperCase(),
+          bg:
+            "#" +
+            backdrop.material.uniforms.uBase.value.getHexString().toUpperCase(),
           spinOn: !staticMode && cfg.RING_LOOP_ON !== false,
           raf: !!raf,
           drops: rungDrops,
