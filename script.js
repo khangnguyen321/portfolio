@@ -28,13 +28,10 @@
         ROCK_SHADE_LIGHT: "#77796a",
         ROCK_ROUGH: 0.92,
         ROCK_METAL: 0.02,
-        GLASS_ROUGH: 0.03 /* polished clear-water read; seasons modulate at runtime */,
+        GLASS_ROUGH: 0.03 /* polished clear-water read */,
         GLASS_IOR: 1.47,
         GLASS_TINT: "#F4FAFC",
         DISPERSION: 0.24 /* visible prismatic edges on the ribbons, per reference */,
-        /* — seasons — */
-        SEASON_S: 14 /* seconds per season; 4 seasons = one 56s loop */,
-        SEASON_FADE_S: 3 /* crossfade window at each season boundary */,
         /* — light — */
         KEY_INT: 1.0,
         FILL_INT: 0.3,
