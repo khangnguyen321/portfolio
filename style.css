@@ -1588,7 +1588,7 @@
         justify-content: center;
       }
       .contact-card {
-        width: 100%;
+        width: 70%;
         border-radius: var(--radius);
         padding: clamp(24px, 3vw, 36px);
       }
