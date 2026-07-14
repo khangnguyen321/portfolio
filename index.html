@@ -2,17 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>Khang Nguyen — Systems That Ship Themselves.</title>
     <meta
       name="description"
       content="Khang Nguyen — Project Engineer and full-stack builder. Enterprise SaaS, workflow automation, and AI-enabled tooling. Builder of NoiGate, a self-hosted PaaS."
     />
-    <meta name="theme-color" content="#E8EDEF" />
+    <meta name="theme-color" content="#E7E9EB" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
       rel="stylesheet"
     />
     <script>
@@ -25,10 +28,23 @@
     <canvas id="obj-canvas" aria-hidden="true"></canvas>
 
     <!-- ═══ PRELOADER ═══ -->
-    <div id="loader" aria-hidden="true">
-      <div class="mark">Khang Nguyen<i>.</i></div>
-      <div id="loader-status">Loading portfolio</div>
-      <div id="loader-pct">0%</div>
+    <div id="loader" aria-label="Loading Khang Nguyen's portfolio">
+      <div class="sk-header">
+        <div class="mark">Khang Nguyen<i>.</i></div>
+        <div class="sk sk-pill" aria-hidden="true"></div>
+      </div>
+      <div class="sk-hero" aria-hidden="true">
+        <div class="sk sk-line w1"></div>
+        <div class="sk sk-line w2"></div>
+        <div class="sk sk-sub"></div>
+        <div class="sk-ctas">
+          <div class="sk sk-btn"></div>
+          <div class="sk sk-btn sm"></div>
+        </div>
+      </div>
+      <div id="loader-status" role="status" aria-live="polite">
+        Loading — one moment.
+      </div>
     </div>
 
     <!-- ═══ NAV — full width ═══ -->
@@ -55,7 +71,7 @@
         <a href="#cta">C O N T A C T</a>
       </nav>
       <a class="btn" href="mailto:hk.nguyen91@gmail.com"
-        >Get In Touch<span class="chip">↗</span></a
+        >Get in touch<span class="chip">↗</span></a
       >
     </header>
 
@@ -73,6 +89,13 @@
       <a href="#cta" data-sec="cta"><i>07</i><span>Contact</span></a>
     </nav>
 
+    <!-- sticky mobile CTA (≤620 only): replaces the header .btn on phones.
+         Shown/hidden by the same rAF scrollspy (updateScrollMotion) — visible
+         through sections 01–06, hidden in the hero and once #cta is active. -->
+    <a class="mobile-cta" href="#cta" aria-label="Jump to the contact form"
+      >Message me<span class="chip">↗</span></a
+    >
+
     <!-- ═══ HERO — full width ═══ -->
     <section id="hero">
       <!-- no-WebGL / no-JS fallback: blueprint line drawing of the object (two ring
@@ -88,7 +111,7 @@
           cy="200"
           rx="164"
           ry="58"
-          stroke="rgba(18,19,22,.16)"
+          stroke="rgba(36,36,36,.16)"
           stroke-width="1.5"
           transform="rotate(-20 200 200)"
         />
@@ -97,39 +120,39 @@
           cy="200"
           rx="132"
           ry="126"
-          stroke="rgba(18,19,22,.16)"
+          stroke="rgba(36,36,36,.16)"
           stroke-width="1.5"
           transform="rotate(15 200 200)"
         />
         <polygon
           points="200,128 258,156 272,214 236,262 168,268 138,216 152,152"
-          fill="rgba(18,19,22,.06)"
-          stroke="rgba(18,19,22,.16)"
+          fill="rgba(36,36,36,.06)"
+          stroke="rgba(36,36,36,.16)"
           stroke-width="1"
         />
         <path
           d="M200 128 L204 196 L272 214 M204 196 L168 268 M204 196 L138 216"
-          stroke="rgba(18,19,22,.08)"
+          stroke="rgba(36,36,36,.08)"
           stroke-width="1"
         />
         <!-- instrumentation parity: trace polylines + node dots + a brace mark (addendum A2) -->
         <path
           d="M168 176 L192 176 L192 158 M226 236 L226 218 L250 218"
-          stroke="rgba(18,19,22,.16)"
+          stroke="rgba(36,36,36,.16)"
           stroke-width="1"
         />
-        <circle cx="168" cy="176" r="2.5" fill="rgba(18,19,22,.20)" />
-        <circle cx="192" cy="158" r="2.5" fill="rgba(18,19,22,.20)" />
-        <circle cx="250" cy="218" r="2.5" fill="rgba(18,19,22,.20)" />
+        <circle cx="168" cy="176" r="2.5" fill="rgba(36,36,36,.20)" />
+        <circle cx="192" cy="158" r="2.5" fill="rgba(36,36,36,.20)" />
+        <circle cx="250" cy="218" r="2.5" fill="rgba(36,36,36,.20)" />
         <path
           d="M186 226 q-7 0 -7 8 q0 6 -5 6 q5 0 5 6 q0 8 7 8 M204 226 q7 0 7 8 q0 6 5 6 q-5 0 -5 6 q0 8 -7 8"
-          stroke="rgba(18,19,22,.16)"
+          stroke="rgba(36,36,36,.16)"
           stroke-width="1.5"
           fill="none"
         />
       </svg>
       <div class="hero-inner">
-        <h2 id="he1">Systems That<br />Ship Themselves.</h2>
+        <h1 id="he1">Systems That<br />Ship Themselves.</h1>
         <p class="hero-sub" id="he2">
           Enterprise SaaS, workflow automation, and AI-enabled tooling — built
           by a project engineer who sits inside real operations.
@@ -138,7 +161,7 @@
           <a class="btn primary" href="#work"
             >See the work <span class="chip">↗</span></a
           >
-          <a class="btn ghost" href="#statement">Learn more</a>
+          <a class="btn ghost" href="#statement">More about me</a>
         </div>
       </div>
       <div class="hero-meta">
@@ -150,7 +173,7 @@
     <!-- ═══ STATEMENT ═══ -->
     <section class="grid-sec" id="statement">
       <div class="sec-label reveal">
-        <i class="idx">01</i>About<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">01</i>About<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -170,7 +193,7 @@
     <!-- ═══ WHAT I BUILD ═══ -->
     <section class="grid-sec" id="build">
       <div class="sec-label reveal">
-        <i class="idx">02</i>What I build<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">02</i>What I build<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -246,7 +269,7 @@
     <!-- ═══ WORK ═══ -->
     <section class="grid-sec" id="work">
       <div class="sec-label reveal">
-        <i class="idx">03</i>Selected work<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">03</i>Selected work<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -487,7 +510,7 @@
     <!-- ═══ APPROACH ═══ -->
     <section class="grid-sec" id="approach">
       <div class="sec-label reveal">
-        <i class="idx">04</i>My approach<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">04</i>My approach<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -591,7 +614,7 @@
     <!-- ═══ HOW IT WORKS ═══ -->
     <section class="grid-sec" id="how">
       <div class="sec-label reveal">
-        <i class="idx">05</i>How it works<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">05</i>How it works<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -674,7 +697,7 @@
     <!-- ═══ EXPERIENCE ═══ -->
     <section class="grid-sec" id="experience">
       <div class="sec-label reveal">
-        <i class="idx">06</i>Experience<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">06</i>Experience<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -755,7 +778,7 @@
     <!-- ═══ CTA ═══ -->
     <section class="grid-sec" id="cta">
       <div class="sec-label reveal">
-        <i class="idx">07</i>Contact<i class="rule-line" aria-hidden="true"></i>
+        <i class="rule-line" aria-hidden="true"></i><i class="idx">07</i>Contact<i class="rule-line" aria-hidden="true"></i>
       </div>
       <div class="wrap">
         <div class="content">
@@ -769,26 +792,26 @@
                   id="cf-name"
                   name="name"
                   type="text"
-                  placeholder="Please fill in your name"
+                  placeholder="First name is fine"
                   autocomplete="name"
                   maxlength="80"
                   required
                 />
               </div>
               <div class="field">
-                <label for="cf-msg">Message</label>
+                <label for="cf-msg">Your message</label>
                 <textarea
                   id="cf-msg"
                   name="message"
                   rows="6"
-                  placeholder="Hi there, send me a message and I'll get back to you."
+                  placeholder="A project, a role, or just a question — whatever's on your mind."
                   maxlength="1800"
                   required
                 ></textarea>
               </div>
               <div class="cf-foot">
                 <button class="btn primary" type="submit">
-                  Send<span class="chip">↗</span>
+                  Send message<span class="chip">↗</span>
                 </button>
                 <span class="cf-status" role="status" aria-live="polite"></span>
               </div>

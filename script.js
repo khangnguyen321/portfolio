@@ -22,7 +22,7 @@
         RING_BAND_DEPTH: [0.3, 0.3, 0.3, 0.3],
         RING_ASPECT_Y: [1, 1, 1, 1] /* 1 = true circles (values <1 squash vertically) */,
         RING_WOBBLE: [0, 0, 0, 0] /* 0 = perfectly round bands, no radial warble */,
-        HERO_POSE: { x: 70, y: 50, s: 84 },
+        HERO_POSE: { x: 50, y: 80, s: 50 },
         ROCK_COLOR: "#343830",
         ROCK_SHADE_DARK: "#171a18",
         ROCK_SHADE_LIGHT: "#77796a",
@@ -47,7 +47,7 @@
        w    = warmth 0→1 — amber rim boost + light-pool tint; peaks at #cta (glint)
        bg   = backdrop plane color. Light-graphite family (≤~4% lightness deltas so
               panel edges don't seam against the static CSS --bg) EXCEPT the guarded
-              #how ink band (#22262A): its ramps are compressed into inter-section
+              #how ink band (#222325): its ramps are compressed into inter-section
               padding by av-guard keyframes and the DOM flips body.sec-ink in sync
               (see updateScrollMotion). K0 bg MUST equal --bg.
        pl   = light-pool strength 0→1 — backdrop brightens in a soft plateau pool
@@ -58,18 +58,22 @@
               ramps inside inter-section padding (dark never under readable copy) */
         KEYFRAMES: [
           /* anchor '' = scroll 0; y>100 exits below.
-             Authored path: hero (vertical center, right of the left-aligned copy)
-             → ZOOM IN at #statement → LEFT phase (#build orbit, #work gyro) →
-             RIGHT phase (#approach disc → #how LADDER inside the guarded ink band
-             → #experience disc) → nest + amber warmth at #cta → ZOOM OUT at footer.
-             Formation adjacency chain nest·nest·orbit·gyro·disc·ladder·ladder·
+             Authored path: hero (lower-center, below the centered copy — the
+             rock core stays under the ROCK_SAFE_Y line) → GHOST at #statement
+             (mild zoom, faded to o 0.3 and pinned by av:0 at the reading
+             moment — the centered copy sits over the canvas with no opaque
+             surface, so legibility beats object prominence here) → LEFT phase
+             (#build orbit, #work gyro) → RIGHT phase (#approach disc → #how
+             LADDER inside the guarded ink band → #experience disc) → nest +
+             amber warmth at #cta → ZOOM OUT at footer. Formation adjacency
+             chain nest·nest·orbit·gyro·disc·ladder·ladder·
              disc·disc·nest·nest satisfies safety rules R1/R3 (see FORMATIONS). */
           {
             a: "",
             form: "nest",
-            x: 70,
-            y: 50,
-            s: 84,
+            x: 50,
+            y: 80,
+            s: 50,
             t: 0.0,
             o: 1.0,
             p: -4,
@@ -77,24 +81,29 @@
             f: 34,
             lk: 1.0,
             w: 0,
-            pl: 0.1,
-            bg: "#E8EDEF",
+            pl: 0.16,
+            bg: "#E7E9EB",
           },
           {
             a: "#statement",
             form: "nest",
+            /* reading pose: av 0 pins this key to the section-filling scroll
+               (default ANCHOR_VH 0.6 would put the reading moment 60% into the
+               K1→K2 lerp, parking the dark rock under the copy — the pre-Phase-0
+               legibility bug); s/o tamed from 132/0.9 for the same reason */
             x: 62,
             y: 50,
-            s: 132,
+            s: 72,
             t: 0.2,
-            o: 0.9,
+            o: 0.3,
             p: -18,
             r: 9,
             f: 28,
             lk: 0.92,
             w: 0,
             pl: 0.14,
-            bg: "#E4E9EC",
+            bg: "#E3E5E7",
+            av: 0,
           },
           {
             a: "#build",
@@ -111,7 +120,7 @@
             lk: 1.05,
             w: 0,
             pl: 0.16,
-            bg: "#DFE5E4",
+            bg: "#DDDFE1",
           },
           {
             a: "#work",
@@ -127,7 +136,7 @@
             lk: 0.88,
             w: 0,
             pl: 0.18,
-            bg: "#D9DEE0",
+            bg: "#D8DADC",
           },
           {
             a: "#approach",
@@ -143,7 +152,7 @@
             lk: 0.95,
             w: 0,
             pl: 0.14,
-            bg: "#E2E6E3",
+            bg: "#E1E3E5",
           },
           {
             /* ink-band GUARD IN: still light at 1.15vh above #how — the dark ramp
@@ -162,7 +171,7 @@
             lk: 1.0,
             w: 0,
             pl: 0.2,
-            bg: "#DDE2E2",
+            bg: "#DCDEE0",
           },
           {
             /* the INK moment: ladder stack over deep graphite, brightest pool;
@@ -181,7 +190,7 @@
             lk: 1.18,
             w: 0,
             pl: 0.3,
-            bg: "#22262A",
+            bg: "#222325",
           },
           {
             /* dark HOLD through the #how→#experience padding, rings re-coalesce */
@@ -199,7 +208,7 @@
             lk: 1.12,
             w: 0,
             pl: 0.26,
-            bg: "#22262A",
+            bg: "#222325",
           },
           {
             /* GUARD OUT: back to light before #experience copy is readable */
@@ -217,7 +226,7 @@
             lk: 0.85,
             w: 0,
             pl: 0.14,
-            bg: "#E6E9E4",
+            bg: "#E7E9EB",
           },
           {
             a: "#cta",
@@ -234,7 +243,7 @@
             lk: 1.02,
             w: 1.0,
             pl: 0.22,
-            bg: "#EDEBE2",
+            bg: "#EAE8E2",
           },
           {
             a: "footer",
@@ -250,7 +259,7 @@
             lk: 0.95,
             w: 0.3,
             pl: 0.1,
-            bg: "#E8EDEF",
+            bg: "#E7E9EB",
           },
         ],
         ANCHOR_VH: 0.6 /* keyframe fires when anchor top hits 60% viewport */,
@@ -371,7 +380,7 @@
         /* — rock instrumentation (addendum A2): PCB traces walking the facets + engraved
        glyphs; amber only on the 3 upper-hemisphere solder dots — */
         ROCK_TRACES: 0,
-        TRACE_COLOR: "#DFE2E5",
+        TRACE_COLOR: "#DFE1E3",
         TRACE_OPACITY: 0.55,
         TRACE_LIFT: 0.015,
         DOT_AMBER_COUNT: 3,
@@ -388,7 +397,7 @@
         ENTRANCE_SCALE_FROM: 0.9,
         ENTRANCE_YAW_FROM_DEG: -6,
         /* — legibility contract — */
-        ROCK_SAFE_X: 0.62 /* rock core stays right of this at ≥1080px in hero */,
+        ROCK_SAFE_Y: 0.58 /* rock-core top edge stays below 58% viewport height in hero at every width; hero text block must end above 54% */,
         /* — performance — */
         DPR_MAX: 1.75,
         FPS_FLOOR: 28,
@@ -406,29 +415,20 @@
 
       /* ═══ PRELOADER ═══ */
       (function () {
-        const pct = document.getElementById("loader-pct");
-        let p = 0;
         let complete = false;
-        const iv = setInterval(
-          () => {
-            p = Math.min(p + Math.floor(Math.random() * 7) + 3, 94);
-            pct.textContent = p + "%";
-          },
-          reduceMotion ? 16 : 46,
-        );
         const fallbackTimer = setTimeout(finish, 1800);
         document.addEventListener("gyre:ready", finish, { once: true });
 
         function finish() {
           if (complete) return;
           complete = true;
-          clearInterval(iv);
           clearTimeout(fallbackTimer);
-          pct.textContent = "100%";
           setTimeout(done, reduceMotion ? 0 : 70);
         }
         function done() {
-          document.getElementById("loader").classList.add("done");
+          const loader = document.getElementById("loader");
+          loader.classList.add("done");
+          loader.setAttribute("aria-hidden", "true");
           heroIn();
         }
       })();
@@ -453,6 +453,8 @@
           section: document.querySelector(link.getAttribute("href")),
         }))
         .filter((item) => item.section);
+      /* sticky mobile CTA (≤620): same scrollspy, zero extra listeners */
+      const mobileCta = document.querySelector(".mobile-cta");
       /* sec-ink: DOM side of the #how ink band. Thresholds are the MIDPOINTS of the
          WebGL bg ramps authored on the av-guard keyframes — in: (1.15+0.35)/2 = 0.75
          above #how; out: (1.15+0.60)/2 = 0.875 above #experience — so the class
@@ -495,6 +497,15 @@
           if (isActive) item.link.setAttribute("aria-current", "location");
           else item.link.removeAttribute("aria-current");
         });
+        /* sticky mobile CTA: shown while a rail section is active (01–06),
+           hidden in the hero (railActive null) and once #cta is active —
+           #cta stays the last-active item through the footer, so the pill
+           stays hidden there too */
+        if (mobileCta)
+          mobileCta.classList.toggle(
+            "show",
+            !!railActive && railActive.section.id !== "cta",
+          );
         if (inkHowEl && inkExpEl) {
           const inkIn = inkHowEl.offsetTop - 0.75 * innerHeight;
           const inkOut = inkExpEl.offsetTop - 0.875 * innerHeight;
@@ -520,7 +531,7 @@
       /* ═══ CONTACT FORM ═══
    No backend by design (static site, no secrets in the repo): Send composes a
    prefilled email in the visitor's own mail client via mailto:. The status
-   line reports in the site's deploy-log voice. */
+   line speaks in a plain human voice — full sentences, no log glyphs. */
       (function () {
         const form = document.getElementById("contact-form");
         if (!form) return;
@@ -542,12 +553,12 @@
           const name = nameEl.value.trim();
           const msg = msgEl.value.trim();
           if (!name) {
-            say("► name required", "err");
+            say("Add your name so I know who's writing.", "err");
             nameEl.focus();
             return;
           }
           if (!msg) {
-            say("► message required", "err");
+            say("Write a quick note — a line or two is plenty.", "err");
             msgEl.focus();
             return;
           }
@@ -559,7 +570,7 @@
             encodeURIComponent(subject) +
             "&body=" +
             encodeURIComponent(body);
-          say("✓ draft opened — hit send in your mail app", "ok");
+          say("Your draft is ready in your mail app — just hit send.", "ok");
         });
       })();
 

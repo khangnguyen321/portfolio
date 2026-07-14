@@ -6,7 +6,7 @@
         const PAGE_BG =
           getComputedStyle(document.documentElement)
             .getPropertyValue("--bg")
-            .trim() || "#E8EDEF";
+            .trim() || "#E7E9EB";
         /* ── config: base + boot-time media-query overrides (rungs are chosen at boot;
         the watchdog can only move DOWN at runtime) ── */
         const cfg = Object.assign({}, OBJ_CFG);
@@ -22,7 +22,7 @@
             x: 50 + (keyframe.x - 50) * 0.62,
             s: keyframe.s * 0.74,
           }));
-          cfg.HERO_POSE = { x: 62, y: 64, s: 58 };
+          cfg.HERO_POSE = { x: 50, y: 78, s: 44 };
         }
         /* The portfolio's central interaction is always live. Accessibility and Data
            Saver still simplify CSS transitions and the decorative logo, but they do
