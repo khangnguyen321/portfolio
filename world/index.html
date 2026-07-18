@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Khang Nguyen — The World of Loop Engineering</title>
+  <meta
+    name="description"
+    content="Scroll to fly through how systems ship themselves — from blueprint to a system nobody has to watch."
+  />
+  <style>
+    /* Engine theme — same design language as the main site (monochrome
+       editorial, single amber accent) but NOT the same literal values:
+       --sw-bg matches the generated scenes' near-white paper background so
+       posters sit seamless (site --bg is #E7E9EB); amber follows the
+       identity accent #F59B2D from project docs (site --accent is #E99A00). */
+    :root,
+    .sw-root {
+      --sw-bg: #fafaf7;
+      --sw-ink: #242424;
+      --sw-ink-soft: #6b6b6b;
+      --sw-accent: #f59b2d;
+      --sw-font-display: Inter, "Helvetica Neue", Arial, sans-serif;
+      --sw-font-body: Inter, "Helvetica Neue", Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="top"></div>
+  <div id="world"></div>
+
+  <script src="scrub-engine.js"></script>
+  <script>
+    mountScrollWorld(document.getElementById("world"), {
+      brand: { name: "Khang Nguyen", href: "/" },
+      hint: "scroll to walk the floor",
+      diveScroll: 1.4,
+      crossfade: 0.08,
+      sections: [
+        {
+          id: "draft",
+          label: "The Blueprint",
+          still: "assets/draft.webp",
+          clip: "assets/vid/leg1.mp4",
+          accent: "#f59b2d",
+          scroll: 1.6,
+          linger: 0.4,
+          eyebrow: "01 / The Blueprint",
+          title: "It Starts As a Drawing.",
+          body: "Every system here begins on paper — scoped, argued over, and drawn before a line of code exists.",
+          tags: ["Requirements first", "No hand-offs"],
+        },
+        {
+          id: "loop",
+          label: "The Loop",
+          still: "assets/loop.webp",
+          clip: "assets/vid/leg2.mp4",
+          accent: "#f59b2d",
+          eyebrow: "02 / The Loop",
+          title: "Agents Do the Building.",
+          body: "A planner breaks the work down, specialists build, an auditor grades it — a loop that reworks its own output until it passes.",
+          tags: ["Plan", "Build", "Audit"],
+        },
+        {
+          id: "launch",
+          label: "The Launch",
+          still: "assets/launch.webp",
+          clip: "assets/vid/leg3.mp4",
+          accent: "#f59b2d",
+          eyebrow: "03 / The Launch",
+          title: "Push. Live in ~30 Seconds.",
+          body: "A git push is the whole deploy — LaunchPort picks it up and the change is live before the coffee cools.",
+          tags: ["git push", "LaunchPort", "No pipelines to babysit"],
+        },
+        {
+          id: "live",
+          label: "Live",
+          still: "assets/live.webp",
+          clip: "assets/vid/leg4.mp4",
+          accent: "#f59b2d",
+          scroll: 1.6,
+          linger: 0.45,
+          eyebrow: "04 / Live",
+          title: "They Run Without Me.",
+          body: "The measure of a system isn't shipping — it's whether the team trusts it enough to stop watching.",
+          tags: [],
+          cta: {
+            primary: { label: "See the systems", href: "/#work" },
+            secondary: { label: "Back to the portfolio", href: "/" },
+          },
+        },
+      ],
+      // Architecture A: one continuous forward take — the legs ARE the journey.
+      connectors: [null, null, null],
+    });
+  </script>
+</body>
+</html>

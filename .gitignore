@@ -21,7 +21,10 @@ MEMORY.md
 
 # Local tool caches & scratch
 .npm-cache/
+.npm-cache-hf/
 .tools/
+# scroll-world raw generation workspace — only encoded outputs ship (to world/assets/)
+world-build/
 .agents/
 .codex/
 .edge-qa*/
