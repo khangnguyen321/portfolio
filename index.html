@@ -22,8 +22,10 @@
       document.documentElement.classList.add("js");
     </script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="polish.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <!-- ═══ GYRE — persistent WebGL object behind the whole page ═══ -->
     <canvas id="obj-canvas" aria-hidden="true"></canvas>
 
@@ -63,13 +65,14 @@
         ></video>
         <span class="logo-text">/khang</span>
       </a>
-      <nav class="links" aria-label="Primary">
-        <a href="#statement">A B O U T</a>
-        <a href="#work">P R O J E C T S</a>
-        <a href="#approach">A P P R O A C H</a>
-        <a href="#experience">W O R K</a>
-        <a href="#cta">C O N T A C T</a>
+      <nav class="links" id="primary-nav" aria-label="Primary">
+        <a href="#statement">About</a>
+        <a href="#work">Projects</a>
+        <a href="#approach">Approach</a>
+        <a href="#experience">Experience</a>
+        <a href="#cta">Contact</a>
       </nav>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu <span aria-hidden="true">+</span></button>
       <a class="btn" href="mailto:hk.nguyen91@gmail.com"
         >Get in touch<span class="chip">↗</span></a
       >
@@ -97,6 +100,7 @@
     >
 
     <!-- ═══ HERO — full width ═══ -->
+    <main id="main">
     <section id="hero">
       <!-- no-WebGL / no-JS fallback: blueprint line drawing of the object (two ring
        ellipses + faceted core), tokens only. Hidden by body.webgl-on. -->
@@ -152,6 +156,7 @@
         />
       </svg>
       <div class="hero-inner">
+        <p class="eyebrow hero-eyebrow"><span class="status-dot" aria-hidden="true"></span> Khang Nguyen / Engineer &amp; Builder</p>
         <h1 id="he1">Systems That<br />Ship Themselves.</h1>
         <p class="hero-sub" id="he2">
           Enterprise SaaS, workflow automation, and AI-enabled tooling — built
@@ -164,8 +169,10 @@
           <a class="btn ghost" href="#statement">More about me</a>
         </div>
       </div>
+      <div class="orbital-caption" aria-hidden="true"><span>FIG. 01 / THE AUTONOMOUS SYSTEM</span><span>Independent parts.<br />One coordinated whole.</span></div>
+      <a class="world-link" href="world/">Inside the process <span aria-hidden="true">↗</span><small>A scroll-through exploration</small></a>
       <div class="hero-meta">
-        <div class="hero-scroll" id="he4">/ Scroll down</div>
+        <a class="hero-scroll" id="he4" href="#statement">↓ &nbsp; Scroll to explore</a>
         <div class="hero-loc" id="he5">Atlanta, GA — EST</div>
       </div>
     </section>
@@ -273,7 +280,7 @@
       </div>
       <div class="wrap">
         <div class="content">
-          <h2 class="display reveal">Case Studies.</h2>
+          <h2 class="display reveal">Built for the real world.</h2>
           <p class="lede reveal" style="margin-top: 20px">
             One public platform, two internal tools running inside UPS
             workflows, and one AI audit pipeline — all in production.
@@ -783,6 +790,13 @@
       <div class="wrap">
         <div class="content">
           <div class="cta-grid">
+            <div class="cta-copy reveal">
+              <p class="eyebrow">Good systems start with a conversation</p>
+              <h2>What can we<br />build together<span>?</span></h2>
+              <p>A project, a role, or an operational problem worth solving. I’d love to hear what you have in mind.</p>
+              <a class="contact-email" href="mailto:hk.nguyen91@gmail.com">hk.nguyen91@gmail.com ↗</a>
+              <p class="contact-location">Based in Atlanta, Georgia.</p>
+            </div>
             <!-- no backend by design (static site, no secrets in repo): the send
              button composes a prefilled email in the visitor's own mail client -->
             <form class="contact-card reveal" id="contact-form" novalidate>
@@ -811,8 +825,9 @@
               </div>
               <div class="cf-foot">
                 <button class="btn primary" type="submit">
-                  Send message<span class="chip">↗</span>
+                  Compose email<span class="chip">↗</span>
                 </button>
+                <p class="form-note">Opens a draft in your email app.</p>
                 <span class="cf-status" role="status" aria-live="polite"></span>
               </div>
             </form>
@@ -821,6 +836,7 @@
       </div>
     </section>
 
+    </main>
     <!-- ═══ FOOTER — full width ═══ -->
     <footer>
       <div class="foot-wrap">
@@ -906,6 +922,7 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="polish.js"></script>
 
     <!-- ═══ GYRE ENGINE — the persistent WebGL object. Module script: three.js is an ES
      module; vendored locally (lib/) so the site keeps zero runtime CDN deps.

@@ -22,20 +22,29 @@
             x: 50 + (keyframe.x - 50) * 0.62,
             s: keyframe.s * 0.74,
           }));
-          cfg.HERO_POSE = { x: 50, y: 78, s: 44 };
+          cfg.HERO_POSE = { x: 50, y: 72, s: 32 };
         }
-        /* The portfolio's central interaction is always live. Accessibility and Data
-           Saver still simplify CSS transitions and the decorative logo, but they do
-           not disable the Three.js renderer or its scroll choreography. */
-        const heroOnly = false;
+        /* Reduced motion gets a single still composition inside the hero.
+           The default experience retains the continuous scroll choreography. */
+        const heroOnly = window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 920px)').matches;
+        if (heroOnly) document.body.classList.add('hero-scene');
         const useTransmission = cfg.TRANSMISSION !== false;
-        const staticMode = false;
-        /* the engine's one reduced-motion gate: used ONLY to suppress the scroll-velocity
-           ring-spin boost. The core scroll choreography stays live by design (see the
-           heroOnly/staticMode comment above); this const does not disable anything else. */
+        const staticMode = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (staticMode) document.body.classList.add('static-scene');
+        /* The same preference gates all added pointer and momentum effects. */
         const prefersReducedMotion = window.matchMedia(
           "(prefers-reduced-motion: reduce)",
         ).matches;
+        // Small, damped viewpoint changes make the sculpture respond like a physical object.
+        // Only orientation changes: the authored ring clearances and scroll path are preserved.
+        const pointer = { x: 0, y: 0, liveX: 0, liveY: 0 };
+        if (!staticMode && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+          window.addEventListener('pointermove', event => {
+            pointer.x = (event.clientX / innerWidth - 0.5) * 2;
+            pointer.y = (event.clientY / innerHeight - 0.5) * 2;
+          }, { passive: true });
+          document.documentElement.addEventListener('pointerleave', () => { pointer.x = 0; pointer.y = 0; });
+        }
 
         /* normalize keyframe channels once: default any omitted viewpoint/env values and
      pre-parse bg into a lerpable THREE.Color */
@@ -738,12 +747,14 @@
               mineralCore.visible = false;
               coreAssetReady = true;
               signalGyreReady();
+              if (staticMode) schedule();
             },
             undefined,
             () => {
               /* Keep the procedural mineral if both final video and poster fail. */
               coreAssetReady = true;
               signalGyreReady();
+              if (staticMode) schedule();
             },
           );
         };
@@ -780,6 +791,7 @@
         document.body.appendChild(coreVideo);
 
         const ensureCoreVideoPlaying = () => {
+          if (staticMode || document.hidden) return;
           if (!coreVideo.isConnected && !coreVideo.src) return;
           coreVideo.play().catch(() => {
             window.addEventListener(
@@ -829,9 +841,14 @@
           if (document.hidden) coreVideo.pause();
           else ensureCoreVideoPlaying();
         });
-        coreVideo.src = "./videos/coreRings.mp4";
-        coreVideo.load();
-        ensureCoreVideoPlaying();
+        if (staticMode) {
+          // Load the matching still image before drawing the single reduced-motion frame.
+          coreVideo.autoplay = false;
+        } else {
+          coreVideo.src = "./videos/coreRings.mp4";
+          coreVideo.load();
+          ensureCoreVideoPlaying();
+        }
 
         /* Retain the precision-core geometry for easy iteration, but let the new mineral
            mass define the visible silhouette. */
@@ -1838,7 +1855,9 @@
             eYaw +
             THREE.MathUtils.degToRad(cfg.CTA_GLINT_TRIM_DEG) *
               Math.min(cur.t / 2.25, 1);
-          orientationGroup.rotation.y = yaw;
+          pointer.liveX += (pointer.x - pointer.liveX) * 0.045;
+          pointer.liveY += (pointer.y - pointer.liveY) * 0.045;
+          orientationGroup.rotation.y = yaw + pointer.liveX * 0.085;
           /* pitch: scroll-coupled component stays clamped ±PITCH_CLAMP; the per-section
        viewpoint offset (p) is added OUTSIDE the clamp. roll (r) is viewpoint-only. */
           orientationGroup.rotation.x =
@@ -1846,7 +1865,7 @@
               yaw * cfg.PITCH_RATIO,
               -THREE.MathUtils.degToRad(cfg.PITCH_CLAMP_DEG),
               THREE.MathUtils.degToRad(cfg.PITCH_CLAMP_DEG),
-            ) + THREE.MathUtils.degToRad(cur.p);
+            ) + THREE.MathUtils.degToRad(cur.p) + pointer.liveY * 0.055;
           orientationGroup.rotation.z = THREE.MathUtils.degToRad(cur.r);
           /* The island camera stays locked; only scroll-authored roll can move it. */
           coreVisualGroup.rotation.z = THREE.MathUtils.degToRad(cur.r * 0.16);
@@ -2105,14 +2124,20 @@
           schedule();
         };
         if (staticMode)
-          schedule(); /* render the single designed frame immediately */
+          activateStaticFallback();
         else begin();
 
         /* Release GPU resources on navigation; shared geometries/materials are disposed
            once even when referenced by several cage or ring meshes. */
         window.addEventListener(
           "pagehide",
-          () => {
+          (event) => {
+            if (event.persisted) {
+              if (raf) cancelAnimationFrame(raf);
+              raf = 0;
+              coreVideo.pause();
+              return;
+            }
             dead = true;
             if (raf) cancelAnimationFrame(raf);
             const geometries = new Set();
@@ -2137,8 +2162,16 @@
             if (scene.environment) scene.environment.dispose();
             renderer.dispose();
           },
-          { once: true },
+          false,
         );
+
+        window.addEventListener('pageshow', event => {
+          if (event.persisted && !dead) {
+            prevNow = 0;
+            ensureCoreVideoPlaying();
+            schedule();
+          }
+        });
 
         /* read-only QA hook — headless probes assert channel/loop state through this */
         window.__gyre = () => ({

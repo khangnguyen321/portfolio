@@ -22,7 +22,7 @@
         RING_BAND_DEPTH: [0.3, 0.3, 0.3, 0.3],
         RING_ASPECT_Y: [1, 1, 1, 1] /* 1 = true circles (values <1 squash vertically) */,
         RING_WOBBLE: [0, 0, 0, 0] /* 0 = perfectly round bands, no radial warble */,
-        HERO_POSE: { x: 50, y: 80, s: 50 },
+        HERO_POSE: { x: 50, y: 76, s: 40 },
         ROCK_COLOR: "#343830",
         ROCK_SHADE_DARK: "#171a18",
         ROCK_SHADE_LIGHT: "#77796a",
@@ -72,8 +72,8 @@
             a: "",
             form: "nest",
             x: 50,
-            y: 80,
-            s: 50,
+            y: 76,
+            s: 40,
             t: 0.0,
             o: 1.0,
             p: -4,
@@ -506,7 +506,7 @@
             "show",
             !!railActive && railActive.section.id !== "cta",
           );
-        if (inkHowEl && inkExpEl) {
+        if (inkHowEl && inkExpEl && !reduceMotion && !document.body.classList.contains('hero-scene') && document.body.classList.contains('webgl-on')) {
           const inkIn = inkHowEl.offsetTop - 0.75 * innerHeight;
           const inkOut = inkExpEl.offsetTop - 0.875 * innerHeight;
           const on = inkOn

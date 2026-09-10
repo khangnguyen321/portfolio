@@ -253,6 +253,8 @@ function mountScrollWorld(container, config) {
       c.style.opacity = cop;
       c.style.transform = reduce ? 'none' : `translateY(${(0.5 - pr) * 4}vh)`;
       c.style.pointerEvents = cop > 0.5 ? 'auto' : 'none';
+      c.inert = cop <= 0.5;
+      c.setAttribute('aria-hidden', String(cop <= 0.5));
     }
 
     const cur = SEGMENTS[ci];

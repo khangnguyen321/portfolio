@@ -23,6 +23,8 @@ MEMORY.md
 .npm-cache/
 .npm-cache-hf/
 .tools/
+.playwright-cli/
+output/playwright/
 # scroll-world raw generation workspace — only encoded outputs ship (to world/assets/)
 world-build/
 .agents/
