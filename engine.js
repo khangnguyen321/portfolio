@@ -1,4 +1,5 @@
       import * as THREE from "./lib/three.module.min.js";
+      import { createEnergyField } from "./effects.js";
 
       (function () {
         const canvas = document.getElementById("obj-canvas");
@@ -298,6 +299,7 @@
            system on that same center so the rings visibly SURROUND the island and
            pitch/roll pivot around it, not around a point above it */
         orientationGroup.position.set(0, -0.48, 0.03);
+        const energyField = createEnergyField(THREE, orientationGroup, innerWidth <= 620);
 
         /* Architectural annular band with broad planar faces, straight inner/outer walls,
            and four tiny chamfers. This avoids the inflated profile of TorusGeometry. */
@@ -422,6 +424,7 @@
         const ringPrecAxes = cfg.RING_LOOP.map((loop) =>
           new THREE.Vector3(...(loop.PRECESS_AXIS || [0, 1, 0])).normalize(),
         );
+        energyField.attachRings(rings, cfg.RING_RADII);
         const ringSpinAxis = new THREE.Vector3();
         const ringQ = new THREE.Quaternion();
         const precQ = new THREE.Quaternion();
@@ -1931,6 +1934,7 @@
             r.scale.setScalar(cur["fs" + i]);
           });
           const coreTime = idleClock / 1000;
+          energyField.update(coreTime, pointer.liveX, pointer.liveY, rungDrops);
           mineralCore.rotation.y =
             0.28 + 0.026 * Math.sin(coreTime * 0.19);
           mineralCore.rotation.x =

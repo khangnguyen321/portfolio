@@ -36,3 +36,39 @@
   });
   matchMedia('(min-width: 921px)').addEventListener('change', () => close());
 })();
+
+/* Pointer lighting and physical depth, without another continuous animation loop. */
+(() => {
+  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  document.querySelectorAll('.svc, .wcard, .step, .appr-row .vis').forEach(card => {
+    card.classList.add('depth-card');
+    let frame = 0;
+    const reset = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      card.style.removeProperty('--rx');
+      card.style.removeProperty('--ry');
+      card.style.removeProperty('--mx');
+      card.style.removeProperty('--my');
+      card.classList.remove('depth-active');
+    };
+    card.addEventListener('pointermove', event => {
+      if (motion.matches || !fine.matches) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const box = card.getBoundingClientRect();
+        const x = Math.max(0, Math.min(1, (event.clientX - box.left) / box.width));
+        const y = Math.max(0, Math.min(1, (event.clientY - box.top) / box.height));
+        card.style.setProperty('--rx', `${(0.5 - y) * 9}deg`);
+        card.style.setProperty('--ry', `${(x - 0.5) * 11}deg`);
+        card.style.setProperty('--mx', `${x * 100}%`);
+        card.style.setProperty('--my', `${y * 100}%`);
+        card.classList.add('depth-active');
+      });
+    }, { passive: true });
+    card.addEventListener('pointerleave', reset);
+    motion.addEventListener('change', reset);
+    fine.addEventListener('change', reset);
+  });
+})();
