@@ -433,6 +433,10 @@
         const ringLiveQ = new THREE.Quaternion();
         const ringFormQ = new THREE.Quaternion();
         const ringPlaneQ = new THREE.Quaternion();
+        const ringAxialQ = new THREE.Quaternion();
+        // Signed seconds per revolution: independent spin around each band's local Z.
+        const axialPeriods = [9, -12, 15, -18];
+        const axialAngles = rings.map(() => 0);
         const ringFormE = new THREE.Euler();
         const RING_PLANE_AXIS = new THREE.Vector3(0, 0, 1);
 
@@ -1878,6 +1882,7 @@
        branch flips spin off, the rings freeze exactly where they are (no snap). */
           rings.forEach((r, i) => {
             if (spinOn) {
+              axialAngles[i] = (axialAngles[i] + Math.PI * 2 * dt / (axialPeriods[i] * 1000)) % (Math.PI * 2);
               spinAngle[i] +=
                 (THREE.MathUtils.degToRad(360 / cfg.RING_LOOP[i].PERIOD_S) *
                   dt *
@@ -1923,7 +1928,8 @@
               );
             r.quaternion
               .copy(ringLiveQ)
-              .slerp(ringFormQ, smooth01(0, 1, cur.fa));
+              .slerp(ringFormQ, smooth01(0, 1, cur.fa))
+              .multiply(ringAxialQ.setFromAxisAngle(RING_PLANE_AXIS, axialAngles[i]));
             /* R2 gate: per-ring y offsets bloom only once alignment is complete */
             const formGate = smooth01(
               cfg.FORM_GATE[0],
@@ -2182,6 +2188,7 @@
           cur: { ...cur },
           fov: camera.fov,
           spin: spinAngle.map((a) => (a * 180) / Math.PI),
+          axialSpin: axialAngles.map((a) => (a * 180) / Math.PI),
           rim: rim.intensity,
           bg:
             "#" +
