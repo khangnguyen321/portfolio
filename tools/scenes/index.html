@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Scene painter</title>
+    <!-- Paints one section's watercolor scene: index.html?scene=hero (or
+         about, …). "Download all" saves every layer as WebP — drop them into
+         assets/scenes/. The export script calls Scene.export() directly. -->
+    <style>
+      body { margin: 0; padding: 16px; background: #fbf7ef; font: 14px system-ui, sans-serif; color: #1d1a2c; }
+      .layers { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; align-items: flex-start; }
+      figure { margin: 0; }
+      figure canvas { display: block; max-width: 560px; height: auto; background: #f3ecdd; }
+      button { font: inherit; padding: 8px 14px; margin-right: 8px; }
+    </style>
+  </head>
+  <body>
+    <button id="dl">Download all</button><span id="name"></span>
+    <div class="layers" id="layers"></div>
+    <script src="painter.js"></script>
+    <script>
+      const scene = new URLSearchParams(location.search).get("scene") || "hero";
+      document.getElementById("name").textContent = `scene: ${scene}`;
+      const s = document.createElement("script");
+      s.src = `${scene}.js`;
+      s.onload = () => {
+        const box = document.getElementById("layers");
+        Scene.layers(scene).forEach((l) => {
+          const fig = document.createElement("figure");
+          const c = Scene.paint(scene, l, Math.min(Scene.spec(scene, l).out || 800, 800));
+          fig.append(c, Object.assign(document.createElement("figcaption"), { textContent: l }));
+          box.append(fig);
+        });
+        window.sceneReady = true;
+      };
+      document.head.append(s);
+      document.getElementById("dl").onclick = () => {
+        Object.entries(Scene.export(scene)).forEach(([layer, url]) => {
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${scene}-${layer}.webp`;
+          a.click();
+        });
+      };
+    </script>
+  </body>
+</html>

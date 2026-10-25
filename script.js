@@ -338,7 +338,7 @@ function compFrame() {
     const jr = jar.getBoundingClientRect();
     const e = t * t * (3 - 2 * t);
     tx += (jr.left + jr.width * 0.5 - cs.w / 2 - tx) * e;
-    ty += (jr.top + jr.height * 0.17 - cs.h * 0.9 - ty) * e;
+    ty += (jr.top + jr.height * 0.19 - cs.h * 0.9 - ty) * e;
   }
   const inJar = t > 0.97;
   if (inJar !== cs.inJar) {
