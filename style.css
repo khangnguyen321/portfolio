@@ -47,6 +47,7 @@
 
   --sec-pig: var(--rose);
   --sec-ink: var(--rose-ink);
+  --line-ink: #2a2340; /* sketch outlines */
 
   --f-display: "Fraunces", "Iowan Old Style", Georgia, serif;
   --f-body: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
@@ -194,6 +195,236 @@ html:not(.js) .wash {
 .js .wash.bloom .wash-canvas {
   opacity: 1;
   transform: none;
+}
+
+/* ═══ ILLUSTRATIONS — one set: rough ink lines over watercolor fills.
+   Paint groups use filter #wc and sit a few units off the ink, the loose
+   misregistration of a quick sketch. Every <svg> is static once drawn, so
+   its filters rasterise once; only whole elements ever animate. ═══ */
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  mix-blend-mode: multiply;
+}
+.ink {
+  fill: none;
+  stroke: var(--line-ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ink .thin { stroke-width: 1.5; }
+.ink .dot { fill: var(--line-ink); stroke: none; }
+.ink .teeth { stroke-width: 5; stroke-linecap: butt; }
+.ink .teeth.sm { stroke-width: 4; }
+.ink .dash { stroke-dasharray: 4 6; }
+.ink-mono {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  fill: var(--line-ink);
+  stroke: none;
+}
+.ink-mono.tiny { font-size: 10px; }
+.ink-display {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 20px;
+  fill: var(--line-ink);
+  stroke: none;
+}
+.ink-display.big { font-size: 24px; }
+
+.f-rose { fill: var(--rose); }
+.f-yellow { fill: var(--yellow); }
+.f-cerulean { fill: var(--cerulean); }
+.f-ultra { fill: var(--ultra); }
+.f-violet { fill: var(--violet); }
+.f-viridian { fill: var(--viridian); }
+.f-orange { fill: var(--orange); }
+.f-sap { fill: var(--sap); }
+.f-teal { fill: color-mix(in srgb, var(--viridian) 50%, var(--cerulean)); }
+.f-paper { fill: var(--sheet); }
+.f-bg { fill: var(--paper); }
+.f-shade { fill: #8b84a3; }
+.t-orange { fill: color-mix(in srgb, var(--orange) 62%, #fff); }
+.t-yellow { fill: color-mix(in srgb, var(--yellow) 66%, #fff); }
+.t-viridian { fill: color-mix(in srgb, var(--viridian) 58%, #fff); }
+.t-cerulean { fill: color-mix(in srgb, var(--cerulean) 58%, #fff); }
+.t-rose { fill: color-mix(in srgb, var(--rose) 58%, #fff); }
+.o-15 { fill-opacity: 0.15; }
+.o-2 { fill-opacity: 0.2; }
+.o-25 { fill-opacity: 0.25; }
+.o-3 { fill-opacity: 0.3; }
+.o-35 { fill-opacity: 0.35; }
+.o-4 { fill-opacity: 0.4; }
+.o-5 { fill-opacity: 0.5; }
+.o-6 { fill-opacity: 0.6; }
+.o-7 { fill-opacity: 0.7; }
+.o-8 { fill-opacity: 0.8; }
+.o-85 { fill-opacity: 0.85; }
+.b-rose,
+.b-ultra,
+.b-violet,
+.b-viridian,
+.b-paper {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.7;
+}
+.b-rose { stroke: var(--rose); }
+.b-ultra { stroke: var(--ultra); }
+.b-violet { stroke: var(--violet); }
+.b-viridian { stroke: var(--viridian); }
+.b-paper { stroke: var(--sheet); stroke-width: 6; stroke-opacity: 0.85; }
+.b-paper.glass { stroke: #fff; stroke-opacity: 0.3; }
+.b-rose.wide { stroke-width: 10; stroke-opacity: 0.4; }
+.b-rose.wider { stroke-width: 14; stroke-opacity: 0.4; }
+.b-ultra.thick { stroke-width: 12; stroke-opacity: 0.75; }
+.ring-rose { fill: none; stroke: var(--rose); stroke-width: 4; stroke-opacity: 0.85; }
+.ring-rose.thin { stroke-width: 2.5; }
+.ring-violet { fill: none; stroke: var(--violet); stroke-width: 9; stroke-opacity: 0.7; }
+.s-rose { stop-color: var(--rose); }
+.s-orange { stop-color: var(--orange); }
+.s-yellow { stop-color: var(--yellow); }
+.s-viridian { stop-color: var(--viridian); }
+.s-teal { stop-color: color-mix(in srgb, var(--viridian) 50%, var(--cerulean)); }
+.s-cerulean { stop-color: var(--cerulean); }
+.s-ultra { stop-color: var(--ultra); }
+.s-violet { stop-color: var(--violet); }
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ═══ COMPANION — the paint drop. Positioned by script.js in the right
+   gutter (never over text); layers: .companion (travel) › .c-lean (scroll
+   velocity) › .c-idle (looping bob) › .c-squish (hover / arrive). ═══ */
+.companion {
+  --cw: 44px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 70;
+  width: var(--cw);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+  transition: opacity 400ms var(--ease-out);
+}
+.companion svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.c-lean,
+.c-idle,
+.c-squish {
+  display: block;
+  transform-origin: 50% 80%;
+}
+.c-idle {
+  animation: bob 3.4s var(--ease-in-out) infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-5px) rotate(4deg); }
+}
+.c-squish.squish {
+  animation: squish 560ms var(--ease-out);
+}
+@keyframes squish {
+  25% { transform: scale(1.22, 0.8); }
+  50% { transform: scale(0.9, 1.12); }
+  72% { transform: scale(1.05, 0.96); }
+}
+.c-fill {
+  fill: var(--sec-pig);
+  transition: fill 600ms var(--ease-out);
+}
+.c-shine {
+  fill: #fff;
+  opacity: 0.65;
+  animation: shimmer 2.6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  50% { opacity: 0.22; }
+}
+.c-eyes circle { fill: var(--line-ink); }
+.c-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 5.5s infinite;
+}
+@keyframes blink {
+  0%, 93%, 100% { transform: none; }
+  95% { transform: scaleY(0.1); }
+}
+.c-smile {
+  fill: none;
+  stroke: var(--line-ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.companion:focus-visible {
+  outline-offset: 4px;
+  border-radius: 40%;
+}
+.companion.in-jar {
+  opacity: 0;
+  pointer-events: none;
+}
+.companion.in-jar .c-squish {
+  transform: translateY(40%) scale(0.4);
+  transition: transform 400ms cubic-bezier(0.55, 0, 1, 0.45);
+}
+.splat {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sec-pig);
+  pointer-events: none;
+  animation: splat 600ms var(--ease-out) forwards;
+}
+@keyframes splat {
+  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.3); opacity: 0; }
+}
+/* the wet trail: every pigment the drop has passed, mapped to real section
+   positions by script.js, masked to a wobbly brush line */
+.drop-trail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 69;
+  width: 10px;
+  height: 0;
+  pointer-events: none;
+  opacity: 0.42;
+  background: var(--trail, linear-gradient(var(--rose), var(--cerulean)));
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='90'><path d='M5 0 C 9 15 9 30 5 45 C 1 60 1 75 5 90' stroke='black' stroke-width='3.4' fill='none' stroke-linecap='round'/></svg>") center top / 10px 90px repeat-y;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='90'><path d='M5 0 C 9 15 9 30 5 45 C 1 60 1 75 5 90' stroke='black' stroke-width='3.4' fill='none' stroke-linecap='round'/></svg>") center top / 10px 90px repeat-y;
+}
+@media (max-width: 1100px) {
+  .companion { --cw: 34px; }
+}
+@media (max-width: 600px) {
+  .companion { --cw: 28px; }
+  .drop-trail { opacity: 0.3; }
 }
 
 /* ═══ SHARED TYPE ═══ */
@@ -366,10 +597,11 @@ h3 {
   min-height: 44px;
   margin-right: auto;
 }
-.brand-dab.wash {
-  position: relative;
-  width: 40px;
-  margin: -6px -10px -6px -8px;
+.brand-drop {
+  width: 20px;
+  height: auto;
+  overflow: visible;
+  transform: rotate(-10deg);
 }
 .brand-name {
   font-family: var(--f-display);
@@ -551,14 +783,14 @@ h3 {
   inset: 0;
   pointer-events: none;
 }
-.h-rose { width: min(66vw, 1060px); top: -20%; right: -10%; }
-.h-yellow { width: min(52vw, 840px); top: 16%; right: 17%; }
-.h-cerulean { width: min(56vw, 900px); top: 38%; right: -22%; }
-.h-violet { width: min(18vw, 290px); top: 6%; right: 40%; }
-.h-dot { width: clamp(34px, 3.4vw, 60px); }
-.h-dot.d1 { top: 16%; right: 8%; }
-.h-dot.d2 { top: 78%; right: 44%; }
-.h-dot.d3 { top: 13%; right: 56%; }
+.hero-art-wrap {
+  position: absolute;
+  right: var(--gutter);
+  top: 50%;
+  width: min(46%, 640px);
+  transform: translateY(-48%);
+  will-change: translate;
+}
 
 .hero-copy {
   position: relative;
@@ -677,8 +909,15 @@ h3 {
 }
 
 /* ═══ 02 · PIGMENT ═══ */
-.a-rose { width: min(52vw, 820px); top: -12%; left: -18vw; opacity: 0.5; }
-.a-bleed { width: min(46vw, 720px); bottom: -24vw; right: -12vw; }
+.about-side {
+  display: grid;
+  gap: clamp(20px, 3vw, 36px);
+  align-content: end;
+}
+.art-desk {
+  width: min(100%, 400px);
+  margin-left: -10px;
+}
 .about-grid {
   display: grid;
   grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
@@ -744,14 +983,11 @@ html:not(.js) .hl {
 .primary:nth-child(3) { margin-top: 160px; }
 .primary-swatch {
   position: relative;
-  width: min(100%, 260px);
-  aspect-ratio: 1;
-  margin: 0 0 8px -24px;
+  width: min(100%, 170px);
+  margin: 0 0 18px -6px;
 }
-.primary-swatch .wash {
-  inset: -12%;
-  width: 124%;
-  transition: transform 600ms var(--ease-out);
+.primary-swatch .art {
+  transition: transform 400ms var(--ease-out);
 }
 .primary-code {
   font-family: var(--f-mono);
@@ -770,11 +1006,10 @@ html:not(.js) .hl {
   max-width: 40ch;
 }
 @media (hover: hover) and (pointer: fine) {
-  .primary:hover .primary-swatch .wash {
-    transform: scale(1.06) rotate(6deg);
+  .primary:hover .primary-swatch .art {
+    transform: translateY(-6px) rotate(4deg);
   }
 }
-.b-bleed { width: min(44vw, 700px); bottom: -22vw; left: -12vw; }
 
 /* ═══ 04 · THE PAINTINGS ═══ */
 .work-intro {
@@ -807,23 +1042,33 @@ html:not(.js) .hl {
 .painting.flip .canvas {
   order: 2;
 }
+/* flipped: keep the wide column for the canvas */
+.painting.feature.flip {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
 .canvas {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1.1;
 }
-.canvas .wash {
-  transition: transform 700ms var(--ease-out);
+/* project sketch sits top-left on the paper; the UI card is pinned over
+   its lower-right corner, so both stay legible */
+.art-work {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 62%;
+  transition: transform 500ms var(--ease-out);
 }
-.canvas .p-a { width: 86%; top: -18%; left: -10%; }
-.canvas .p-b { width: 74%; bottom: -20%; right: -8%; }
-.painting.flip .p-a { left: auto; right: -10%; }
-.painting.flip .p-b { right: auto; left: -8%; }
+.painting.flip .art-work {
+  left: auto;
+  right: 0;
+}
 .mock {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(84%, 500px);
-  transform: translate(-50%, -50%) rotate(-1.6deg);
+  right: 0;
+  bottom: 3%;
+  width: min(74%, 470px);
+  transform: rotate(-1.6deg);
   border-radius: 12px;
   background: var(--sheet);
   box-shadow:
@@ -835,14 +1080,19 @@ html:not(.js) .hl {
   transition: transform 320ms var(--ease-out), box-shadow 320ms var(--ease-out);
 }
 .painting:nth-child(even) .mock {
-  transform: translate(-50%, -50%) rotate(1.4deg);
+  transform: rotate(1.4deg);
+}
+.painting.flip .mock {
+  right: auto;
+  left: 0;
 }
 @media (hover: hover) and (pointer: fine) {
   .painting:hover .mock {
-    transform: translate(-50%, calc(-50% - 6px)) rotate(0deg);
+    transform: translateY(-6px) rotate(0deg);
   }
-  .painting:hover .p-a { transform: scale(1.05) rotate(-3deg); }
-  .painting:hover .p-b { transform: scale(1.06) rotate(4deg); }
+  .painting:hover .art-work {
+    transform: translateY(-4px) rotate(-1.5deg);
+  }
 }
 .mock-bar {
   display: flex;
@@ -1062,7 +1312,6 @@ html:not(.js) .hl {
   align-items: center;
   gap: 0.35em;
 }
-.w-bleed { width: min(46vw, 740px); bottom: -24vw; right: -14vw; }
 
 /* ═══ 05 · GLAZING ═══ */
 .glaze-layout {
@@ -1098,19 +1347,25 @@ html:not(.js) .hl {
   transform: translateX(-50%) rotate(3deg);
   background: color-mix(in srgb, var(--violet) 22%, rgba(255, 255, 255, 0.6));
 }
-.g { width: 82%; }
-.g1 { top: -6%; left: -8%; }
-.g2 { top: -2%; right: -12%; }
-.g3 { bottom: -14%; left: 10%; }
-.js .glaze .g .wash-canvas {
-  opacity: 0;
-  transform: scale(0.82) rotate(-8deg);
-  transition:
-    opacity 900ms var(--ease-out),
-    transform 1.6s var(--ease-paint);
+/* each glass pane is its own <svg> so it composites on its own layer and
+   multiplies with the panes beneath it — real glazing */
+.pane {
+  position: absolute;
+  inset: 4% 4% 4% 4%;
+  width: 92%;
+  height: 92%;
+  overflow: visible;
+  mix-blend-mode: multiply;
 }
-.js .glaze .g.on .wash-canvas {
-  opacity: 0.92;
+.js .pane {
+  opacity: 0;
+  transform: translateY(-34px);
+  transition:
+    opacity 450ms var(--ease-out),
+    transform 800ms var(--ease-paint);
+}
+.js .pane.on {
+  opacity: 1;
   transform: none;
 }
 .glaze-caption {
@@ -1261,61 +1516,65 @@ html:not(.js) .hl {
 .ticks i.dim {
   background: var(--yellow);
 }
-.ap-bleed { width: min(44vw, 700px); bottom: -22vw; left: -12vw; }
 
 /* ═══ 06 · WET-ON-WET ═══ */
 .flowline {
   position: relative;
   margin-top: clamp(64px, 8vw, 110px);
 }
-.wet-line {
-  position: absolute;
-  left: -3%;
-  right: -3%;
-  top: -82px;
-  height: 220px;
-  pointer-events: none;
-}
-.wet-line .wash {
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
-  mix-blend-mode: normal;
-}
-/* the stroke is dragged left → right once the row is on screen (the trigger
-   is .flowline: a fully clipped element never registers as intersecting) */
-.js .wet-line {
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 1.9s var(--ease-in-out) 0.2s;
-}
-.js .flowline.in .wet-line {
-  clip-path: inset(0 -2% 0 0);
-}
 .steps {
+  --gap: clamp(24px, 3vw, 48px);
   position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(24px, 3vw, 48px);
+  gap: var(--gap);
+}
+.step {
+  position: relative;
 }
 .drop {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  margin-bottom: 30px;
-  border-radius: 56% 44% 52% 48% / 48% 56% 44% 52%;
-  background: var(--sheet);
-  border: 2px solid var(--viridian-ink);
-  font-family: var(--f-display);
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--viridian-ink);
-  box-shadow: 0 10px 24px -14px rgba(6, 112, 95, 0.6);
+  position: relative;
+  display: block;
+  width: 60px;
+  margin-bottom: 26px;
 }
-.step:nth-child(2) .drop { border-color: #087074; color: #087074; }
-.step:nth-child(3) .drop { border-color: #096a8c; color: #096a8c; }
-.step:nth-child(4) .drop { border-color: var(--cerulean-ink); color: var(--cerulean-ink); }
+.drop svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.drop-no {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--ink);
+}
+.drop-no.light {
+  fill: var(--sheet);
+}
+/* the wet run from one drop into the next — dragged left → right once the
+   row is on screen (the trigger is .flowline: a fully clipped element never
+   registers as intersecting) */
+.run {
+  position: absolute;
+  left: 40px;
+  top: 38px;
+  width: calc(100% + var(--gap) - 20px);
+  height: 26px;
+  overflow: visible;
+  mix-blend-mode: multiply;
+}
+.js .run {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 900ms var(--ease-in-out);
+}
+.js .flowline.in .run {
+  clip-path: inset(-40% -4% -40% 0);
+}
+.js .flowline.in .step:nth-child(1) .run { transition-delay: 300ms; }
+.js .flowline.in .step:nth-child(2) .run { transition-delay: 900ms; }
+.js .flowline.in .step:nth-child(3) .run { transition-delay: 1500ms; }
 .step h3 {
   font-size: clamp(22px, 1.9vw, 27px);
   margin-bottom: 10px;
@@ -1325,9 +1584,17 @@ html:not(.js) .hl {
   color: var(--ink-2);
   font-size: 16px;
 }
-.pr-bleed { width: min(46vw, 720px); bottom: -24vw; right: -12vw; }
 
 /* ═══ 07 · STRATA ═══ */
+.exp-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: end;
+}
+.art-canyon {
+  width: 100%;
+}
 .strata {
   margin-top: clamp(48px, 6vw, 80px);
   border-bottom: 1px solid var(--line);
@@ -1382,13 +1649,15 @@ html:not(.js) .hl {
   color: var(--ink);
   font-weight: 600;
 }
-.x-bleed { width: min(46vw, 720px); bottom: -24vw; left: -14vw; }
 
 /* ═══ 08 · CLEAN PAPER ═══ */
 .contact {
   padding-bottom: clamp(110px, 14vw, 200px);
 }
-.c-wash { width: min(70vw, 1080px); top: 2%; right: -22vw; opacity: 0.55; }
+.art-contact {
+  width: min(100%, 400px);
+  margin-top: clamp(28px, 4vw, 48px);
+}
 .contact-grid {
   display: grid;
   grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
@@ -1542,19 +1811,39 @@ html:not(.js) .hl {
   color: #f3eee4;
   padding: clamp(96px, 12vw, 170px) 0 28px;
 }
-.foot-water .fw {
-  mix-blend-mode: screen;
-  opacity: 0.4;
-  animation: swirl 46s var(--ease-in-out) infinite alternate;
+/* the rinse jar: chalk-light ink on dark water; the companion lands here */
+.art-jar {
+  --line-ink: #efe8dc;
+  position: absolute;
+  right: var(--gutter);
+  bottom: 84px;
+  width: clamp(96px, 12vw, 172px);
+  height: auto;
+  overflow: visible;
 }
-.foot-water .fw1 { width: 44vw; top: -12%; left: -8%; }
-.foot-water .fw2 { width: 34vw; top: 26%; left: 34%; animation-delay: -12s; }
-.foot-water .fw3 { width: 42vw; top: -10%; right: -10%; animation-delay: -24s; }
-.foot-water .fw4 { width: 36vw; bottom: -16%; right: 14%; animation-delay: -6s; }
-.foot-water .fw5 { width: 30vw; bottom: -12%; left: 2%; animation-delay: -30s; }
-@keyframes swirl {
-  from { transform: translate(0, 0) rotate(0deg); }
-  to { transform: translate(4vw, 3vw) rotate(24deg); }
+.f-glass { fill: rgba(255, 255, 255, 0.08); }
+.f-water { fill: #6c6073; fill-opacity: 0.9; }
+.jar-rainbow { fill: url(#jar-mix); fill-opacity: 0.42; }
+.art-jar .swirl {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.jar-ripple {
+  fill: none;
+  stroke: #f3eee4;
+  stroke-width: 1.6;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.art-jar.splash .jar-ripple {
+  animation: ripple 900ms var(--ease-out) 2;
+}
+@keyframes ripple {
+  0% { opacity: 0.9; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(1.7); }
 }
 .foot-inner {
   position: relative;
@@ -1702,6 +1991,9 @@ html:not(.js) .hl {
   .palette a {
     padding: 0 9px;
   }
+  .hero-art-wrap {
+    width: 40%;
+  }
   .stratum {
     grid-template-columns: minmax(150px, 1.6fr) minmax(0, 3fr) minmax(0, 4fr);
   }
@@ -1760,15 +2052,18 @@ html:not(.js) .hl {
     border-color: var(--pig);
   }
 
+  /* the illustration moves above the headline; padding reserves its height
+     (width × 460/560 aspect) so it never sits behind text */
   .hero {
     grid-template-columns: 1fr;
-    padding-top: calc(var(--nav-h) + 30vh);
+    padding-top: calc(var(--nav-h) + min(62vw, 271px) + 28px);
   }
-  .h-rose { width: 96vw; top: -6%; right: -34vw; }
-  .h-yellow { width: 70vw; top: 2%; right: 30vw; }
-  .h-cerulean { width: 74vw; top: 14%; right: -24vw; }
-  .h-violet { display: none; }
-  .h-dot.d2 { top: 36%; right: 70%; }
+  .hero-art-wrap {
+    top: calc(var(--nav-h) + 12px);
+    right: 50%;
+    width: min(76vw, 330px);
+    transform: translateX(50%);
+  }
   .hero h1 { max-width: none; }
   .scroll-cue {
     display: none;
@@ -1781,8 +2076,13 @@ html:not(.js) .hl {
   .about-grid,
   .work-intro,
   .glaze-layout,
-  .contact-grid {
+  .contact-grid,
+  .exp-intro {
     grid-template-columns: 1fr;
+  }
+  .art-desk,
+  .art-canyon {
+    width: min(100%, 380px);
   }
   .primaries {
     grid-template-columns: 1fr;
@@ -1796,8 +2096,8 @@ html:not(.js) .hl {
   }
   .primary-swatch {
     grid-row: 1 / span 3;
-    width: 120px;
-    margin: -12px 0 0 -12px;
+    width: 100px;
+    margin: 0;
   }
   .primary-code,
   .primary h3,
@@ -1814,6 +2114,25 @@ html:not(.js) .hl {
   }
   .painting.flip .canvas {
     order: 0;
+  }
+  /* stacked: sketch first, UI card overlapping only its lower edge */
+  .canvas {
+    aspect-ratio: auto;
+    display: grid;
+  }
+  .art-work,
+  .painting.flip .art-work {
+    position: relative;
+    width: min(76%, 360px);
+    margin: 0 auto 0 0;
+  }
+  .mock,
+  .painting.flip .mock {
+    position: relative;
+    right: auto;
+    left: auto;
+    bottom: auto;
+    margin: -44px 0 0 auto;
   }
   .glaze {
     position: relative;
@@ -1832,7 +2151,7 @@ html:not(.js) .hl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: 48px;
   }
-  .wet-line {
+  .run {
     display: none;
   }
   .stratum {
@@ -1850,9 +2169,6 @@ html:not(.js) .hl {
   }
   .nav-cta {
     display: none;
-  }
-  .hero {
-    padding-top: calc(var(--nav-h) + 24vh);
   }
   .hero-cta .btn {
     flex: 1 1 auto;
@@ -1872,11 +2188,15 @@ html:not(.js) .hl {
     grid-template-columns: 88px 1fr;
   }
   .primary-swatch {
-    width: 88px;
+    width: 76px;
   }
-  .mock {
-    width: 92%;
+  .mock,
+  .painting.flip .mock {
+    width: 94%;
     font-size: 12px;
+  }
+  .art-jar {
+    bottom: 90px;
   }
   .mock-term .mock-pad {
     font-size: 11px;

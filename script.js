@@ -83,11 +83,11 @@ if (hasIO) {
   );
   washes.forEach((el) => {
     near.observe(el);
-    if (!el.classList.contains("g")) seen.observe(el);
+    seen.observe(el);
   });
 } else {
   washes.forEach((el) => {
-    el._wantBloom = !el.classList.contains("g");
+    el._wantBloom = true;
     enqueue(el);
   });
 }
@@ -152,11 +152,13 @@ function onScroll() {
   });
   const pig = pigSec ? pigSec.dataset.pig : "rose";
   if (pig !== currentPig) {
+    if (currentPig) companionArrive();
     currentPig = pig;
     document.documentElement.style.setProperty("--sec-pig", `var(--${pig})`);
     document.documentElement.style.setProperty("--sec-ink", `var(--${pig}-ink)`);
   }
   requestDrift();
+  requestCompanion();
 }
 function requestScroll() {
   if (ticking) return;
@@ -166,6 +168,7 @@ function requestScroll() {
 addEventListener("scroll", requestScroll, { passive: true });
 addEventListener("resize", () => {
   measureDrift();
+  measureCompanion();
   requestScroll();
 }, { passive: true });
 
@@ -186,12 +189,12 @@ addEventListener("keydown", (e) => {
 });
 matchMedia("(min-width: 861px)").addEventListener("change", (e) => e.matches && setMenu(false));
 
-/* ═══ GLAZING — the three primaries are laid over each other one principle
-   at a time; scrolling back up lifts the glazes off again ═══ */
+/* ═══ GLAZING — three glass panes, one per primary, are laid down one
+   principle at a time; scrolling back up lifts them off again ═══ */
 (function () {
   const glaze = document.querySelector(".glaze");
   if (!glaze) return;
-  const layers = Array.from(glaze.querySelectorAll(".g"));
+  const layers = Array.from(glaze.querySelectorAll(".pane"));
   const count = glaze.querySelector(".glaze-count");
   const principles = Array.from(document.querySelectorAll(".principle"));
   const stacked = matchMedia("(max-width: 860px)");
@@ -284,6 +287,134 @@ if (drifters.length) {
     });
   }
 }
+
+/* ═══ COMPANION — a paint drop travelling the right gutter. Its height on
+   the track mirrors page progress; it takes each section's pigment (CSS
+   --sec-pig), leans with scroll speed, leaves a wet trail coloured by the
+   sections it passed, and near the end glides into the rinse jar. ═══ */
+const comp = document.querySelector(".companion");
+const trail = document.querySelector(".drop-trail");
+const compLean = comp.querySelector(".c-lean");
+const compSquish = comp.querySelector(".c-squish");
+const jar = document.querySelector(".art-jar");
+const footer = document.querySelector("footer");
+const stops = Array.from(document.querySelectorAll("main > section, footer"));
+const cs = { x: 0, y: 0, lean: 0, w: 44, h: 52, col: 0, top: 0, bottom: 0, trailH: 0, lastY: scrollY, inJar: false, placed: false };
+let compRunning = false;
+
+function measureCompanion() {
+  cs.w = comp.offsetWidth;
+  cs.h = (cs.w * 76) / 64;
+  /* centre of the empty strip right of the text column — never over copy */
+  const inner = document.querySelector(".sec-inner");
+  const r = inner.getBoundingClientRect();
+  const free = innerWidth - (r.right - parseFloat(getComputedStyle(inner).paddingRight));
+  cs.col = innerWidth <= 600 ? innerWidth - cs.w * 0.62 : innerWidth - Math.min(free / 2, 80) - cs.w / 2;
+  cs.top = nav.offsetHeight + 18;
+  cs.bottom = innerHeight - cs.h - 28;
+
+  const max = Math.max(document.documentElement.scrollHeight - innerHeight, 1);
+  const parts = pigSections.map((s) => {
+    const p = Math.min(Math.max((s.offsetTop - innerHeight * 0.4) / max, 0), 1);
+    return `var(--${s.dataset.pig}) ${(p * 100).toFixed(1)}%`;
+  });
+  trail.style.setProperty("--trail", `linear-gradient(${parts.join(", ")})`);
+  cs.trailH = cs.bottom - cs.top;
+  trail.style.height = `${cs.trailH}px`;
+  trail.style.transform = `translate3d(${(cs.col + cs.w / 2 - 5).toFixed(1)}px, ${(cs.top + cs.h * 0.3).toFixed(1)}px, 0)`;
+}
+
+function compFrame() {
+  const max = Math.max(document.documentElement.scrollHeight - innerHeight, 1);
+  const p = Math.min(Math.max(scrollY / max, 0), 1);
+  const trackY = cs.top + p * (cs.bottom - cs.top);
+  let tx = cs.col;
+  let ty = trackY;
+
+  /* the last stretch of page: steer into the jar's mouth */
+  const reach = Math.min(footer.offsetHeight, innerHeight) * 0.85;
+  const t = Math.min(Math.max(1 - (max - scrollY) / reach, 0), 1);
+  if (t > 0) {
+    const jr = jar.getBoundingClientRect();
+    const e = t * t * (3 - 2 * t);
+    tx += (jr.left + jr.width * 0.5 - cs.w / 2 - tx) * e;
+    ty += (jr.top + jr.height * 0.17 - cs.h * 0.9 - ty) * e;
+  }
+  const inJar = t > 0.97;
+  if (inJar !== cs.inJar) {
+    cs.inJar = inJar;
+    comp.classList.toggle("in-jar", inJar);
+    if (inJar && !reduceMotion) {
+      jar.classList.remove("splash");
+      void jar.getBoundingClientRect();
+      jar.classList.add("splash");
+    }
+  }
+
+  const v = scrollY - cs.lastY;
+  cs.lastY = scrollY;
+  if (reduceMotion || !cs.placed) {
+    cs.x = tx;
+    cs.y = ty;
+    cs.placed = true;
+  } else {
+    cs.x += (tx - cs.x) * 0.16;
+    cs.y += (ty - cs.y) * 0.16;
+    cs.lean += (Math.max(-12, Math.min(12, -v * 0.35)) - cs.lean) * 0.15;
+    compLean.style.rotate = `${cs.lean.toFixed(2)}deg`;
+  }
+  comp.style.transform = `translate3d(${cs.x.toFixed(1)}px, ${cs.y.toFixed(1)}px, 0)`;
+  const shown = Math.max(0, Math.min(cs.trailH, trackY - cs.top));
+  trail.style.clipPath = `inset(0 0 ${(cs.trailH - shown).toFixed(1)}px 0)`;
+
+  const moving = Math.abs(tx - cs.x) > 0.3 || Math.abs(ty - cs.y) > 0.3 || Math.abs(cs.lean) > 0.15;
+  if (moving) requestAnimationFrame(compFrame);
+  else compRunning = false;
+}
+function requestCompanion() {
+  if (compRunning) return;
+  compRunning = true;
+  requestAnimationFrame(compFrame);
+}
+
+function squish() {
+  if (reduceMotion) return;
+  compSquish.classList.remove("squish");
+  void compSquish.offsetWidth; /* restart the keyframes */
+  compSquish.classList.add("squish");
+}
+function companionArrive() {
+  squish();
+}
+compSquish.addEventListener("animationend", () => compSquish.classList.remove("squish"));
+if (finePointer) comp.addEventListener("pointerenter", squish);
+
+comp.addEventListener("click", () => {
+  if (!reduceMotion) {
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * Math.PI * 2 + Math.random() * 0.5;
+      const d = 18 + Math.random() * 16;
+      const s = document.createElement("span");
+      s.className = "splat";
+      s.style.setProperty("--dx", `${(Math.cos(a) * d).toFixed(1)}px`);
+      s.style.setProperty("--dy", `${(Math.sin(a) * d).toFixed(1)}px`);
+      s.addEventListener("animationend", () => s.remove());
+      comp.appendChild(s);
+    }
+    squish();
+  }
+  const behavior = reduceMotion ? "auto" : "smooth";
+  /* +24 clears the scroll-padding a just-reached section rests on */
+  const next = stops.find((s) => s.getBoundingClientRect().top > nav.offsetHeight + 24);
+  if (next) next.scrollIntoView({ behavior });
+  else scrollTo({ top: 0, behavior });
+});
+
+measureCompanion();
+addEventListener("load", () => {
+  measureCompanion();
+  requestCompanion();
+});
 onScroll();
 
 /* ═══ CONTACT FORM ═══
