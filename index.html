@@ -2,931 +2,608 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <title>Khang Nguyen — Systems That Ship Themselves.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Khang Nguyen — Systems That Ship Themselves</title>
     <meta
       name="description"
-      content="Khang Nguyen — Project Engineer and full-stack builder. Enterprise SaaS, workflow automation, and AI-enabled tooling. Builder of NoiGate, a self-hosted PaaS."
+      content="Khang Nguyen — Project Engineer and full-stack builder in Atlanta. Enterprise SaaS, workflow automation, and AI-enabled tooling. Builder of NoiGate, a self-hosted PaaS."
     />
-    <meta name="theme-color" content="#E7E9EB" />
+    <meta name="theme-color" content="#FBF7EF" />
+    <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=DM+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <script>
       document.documentElement.classList.add("js");
     </script>
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="polish.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <!-- ═══ GYRE — persistent WebGL object behind the whole page ═══ -->
-    <canvas id="obj-canvas" aria-hidden="true"></canvas>
 
-    <!-- ═══ PRELOADER ═══ -->
-    <div id="loader" aria-label="Loading Khang Nguyen's portfolio">
-      <div class="sk-header">
-        <div class="mark">Khang Nguyen<i>.</i></div>
-        <div class="sk sk-pill" aria-hidden="true"></div>
-      </div>
-      <div class="sk-hero" aria-hidden="true">
-        <div class="sk sk-line w1"></div>
-        <div class="sk sk-line w2"></div>
-        <div class="sk sk-sub"></div>
-        <div class="sk-ctas">
-          <div class="sk sk-btn"></div>
-          <div class="sk sk-btn sm"></div>
-        </div>
-      </div>
-      <div id="loader-status" role="status" aria-live="polite">
-        Loading — one moment.
-      </div>
-    </div>
+    <!-- paper grain: one fixed multiply layer over the whole page -->
+    <div class="paper-grain" aria-hidden="true"></div>
 
-    <!-- ═══ NAV — full width ═══ -->
-    <header id="header">
-      <a class="logo" href="#hero" aria-label="Khang Nguyen — home">
-        <video
-          class="logo-video"
-          data-src="videos/logo-loop.mp4"
-          data-webm="videos/logo-loop.webm"
-          muted
-          playsinline
-          preload="none"
-          disablepictureinpicture
-          tabindex="-1"
-          aria-hidden="true"
-        ></video>
-        <span class="logo-text">/khang</span>
+    <!-- ═══ NAV — the palette. Each link is a paint well holding its section's
+         pigment; the progress stroke reveals every color you've scrolled past. ═══ -->
+    <header class="nav" id="nav">
+      <a class="brand" href="#top" aria-label="Khang Nguyen — back to top">
+        <span class="brand-dab wash" data-pig="rose" data-seed="7" data-layers="18" aria-hidden="true"></span>
+        <span class="brand-name">Khang Nguyen</span>
       </a>
-      <nav class="links" id="primary-nav" aria-label="Primary">
-        <a href="#statement">About</a>
-        <a href="#work">Projects</a>
-        <a href="#approach">Approach</a>
-        <a href="#experience">Experience</a>
-        <a href="#cta">Contact</a>
+      <nav class="palette" id="primary-nav" aria-label="Primary">
+        <a href="#about" data-pig="rose"><i class="well" aria-hidden="true"></i><span>About</span></a>
+        <a href="#work" data-pig="ultra"><i class="well" aria-hidden="true"></i><span>Work</span></a>
+        <a href="#approach" data-pig="violet"><i class="well" aria-hidden="true"></i><span>Approach</span></a>
+        <a href="#experience" data-pig="orange"><i class="well" aria-hidden="true"></i><span>Experience</span></a>
+        <a href="#contact" data-pig="cerulean"><i class="well" aria-hidden="true"></i><span>Contact</span></a>
       </nav>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu <span aria-hidden="true">+</span></button>
-      <a class="btn" href="mailto:hk.nguyen91@gmail.com"
-        >Get in touch<span class="chip">↗</span></a
-      >
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="menu-label">Menu</span><i aria-hidden="true"></i>
+      </button>
+      <a class="btn btn-ink nav-cta" href="mailto:hk.nguyen91@gmail.com">
+        Email me<span class="chip" aria-hidden="true">↗</span>
+      </a>
+      <div class="nav-progress" aria-hidden="true"><i></i></div>
     </header>
 
-    <!-- fixed section-index rail — active state driven by the same rAF scrollspy
-         that powers the nav links (updateScrollMotion). Hidden ≤920px. -->
-    <nav class="rail" aria-label="Sections">
-      <a href="#statement" data-sec="statement"><i>01</i><span>About</span></a>
-      <a href="#build" data-sec="build"><i>02</i><span>What I build</span></a>
-      <a href="#work" data-sec="work"><i>03</i><span>Selected work</span></a>
-      <a href="#approach" data-sec="approach"><i>04</i><span>My approach</span></a>
-      <a href="#how" data-sec="how"><i>05</i><span>How it works</span></a>
-      <a href="#experience" data-sec="experience"
-        ><i>06</i><span>Experience</span></a
-      >
-      <a href="#cta" data-sec="cta"><i>07</i><span>Contact</span></a>
-    </nav>
-
-    <!-- sticky mobile CTA (≤620 only): replaces the header .btn on phones.
-         Shown/hidden by the same rAF scrollspy (updateScrollMotion) — visible
-         through sections 01–06, hidden in the hero and once #cta is active. -->
-    <a class="mobile-cta" href="#cta" aria-label="Jump to the contact form"
-      >Message me<span class="chip">↗</span></a
-    >
-
-    <!-- ═══ HERO — full width ═══ -->
     <main id="main">
-    <section id="hero">
-      <!-- no-WebGL / no-JS fallback: blueprint line drawing of the object (two ring
-       ellipses + faceted core), tokens only. Hidden by body.webgl-on. -->
-      <svg
-        class="obj-fallback"
-        viewBox="0 0 400 400"
-        aria-hidden="true"
-        fill="none"
-      >
-        <ellipse
-          cx="200"
-          cy="200"
-          rx="164"
-          ry="58"
-          stroke="rgba(36,36,36,.16)"
-          stroke-width="1.5"
-          transform="rotate(-20 200 200)"
-        />
-        <ellipse
-          cx="200"
-          cy="200"
-          rx="132"
-          ry="126"
-          stroke="rgba(36,36,36,.16)"
-          stroke-width="1.5"
-          transform="rotate(15 200 200)"
-        />
-        <polygon
-          points="200,128 258,156 272,214 236,262 168,268 138,216 152,152"
-          fill="rgba(36,36,36,.06)"
-          stroke="rgba(36,36,36,.16)"
-          stroke-width="1"
-        />
-        <path
-          d="M200 128 L204 196 L272 214 M204 196 L168 268 M204 196 L138 216"
-          stroke="rgba(36,36,36,.08)"
-          stroke-width="1"
-        />
-        <!-- instrumentation parity: trace polylines + node dots + a brace mark (addendum A2) -->
-        <path
-          d="M168 176 L192 176 L192 158 M226 236 L226 218 L250 218"
-          stroke="rgba(36,36,36,.16)"
-          stroke-width="1"
-        />
-        <circle cx="168" cy="176" r="2.5" fill="rgba(36,36,36,.20)" />
-        <circle cx="192" cy="158" r="2.5" fill="rgba(36,36,36,.20)" />
-        <circle cx="250" cy="218" r="2.5" fill="rgba(36,36,36,.20)" />
-        <path
-          d="M186 226 q-7 0 -7 8 q0 6 -5 6 q5 0 5 6 q0 8 7 8 M204 226 q7 0 7 8 q0 6 5 6 q-5 0 -5 6 q0 8 -7 8"
-          stroke="rgba(36,36,36,.16)"
-          stroke-width="1.5"
-          fill="none"
-        />
-      </svg>
-      <div class="hero-inner">
-        <p class="eyebrow hero-eyebrow"><span class="status-dot" aria-hidden="true"></span> Khang Nguyen / Engineer &amp; Builder</p>
-        <h1 id="he1">Systems That<br />Ship Themselves.</h1>
-        <p class="hero-sub" id="he2">
-          Enterprise SaaS, workflow automation, and AI-enabled tooling — built
-          by a project engineer who sits inside real operations.
-        </p>
-        <div class="hero-cta" id="he3">
-          <a class="btn primary" href="#work"
-            >See the work <span class="chip">↗</span></a
-          >
-          <a class="btn ghost" href="#statement">More about me</a>
+      <!-- ═══ 01 · FIRST WASH — hero ═══ -->
+      <section class="hero" id="top" data-pig="rose">
+        <div class="hero-art" aria-hidden="true">
+          <div class="wash h-rose" data-pig="rose" data-pig2="violet" data-seed="11" data-drift="-0.06" data-follow="18" data-delay="80"></div>
+          <div class="wash h-yellow" data-pig="yellow" data-pig2="orange" data-seed="23" data-drift="0.04" data-follow="-12" data-delay="260"></div>
+          <div class="wash h-cerulean" data-pig="cerulean" data-pig2="viridian" data-seed="5" data-drift="-0.1" data-follow="24" data-delay="440"></div>
+          <div class="wash h-violet" data-pig="violet" data-seed="41" data-layers="26" data-drift="-0.18" data-follow="-30" data-delay="620"></div>
+          <div class="wash h-dot d1" data-pig="orange" data-seed="3" data-layers="16" data-drift="-0.24" data-delay="760"></div>
+          <div class="wash h-dot d2" data-pig="rose" data-seed="19" data-layers="14" data-drift="-0.3" data-delay="820"></div>
+          <div class="wash h-dot d3" data-pig="cerulean" data-seed="31" data-layers="14" data-drift="-0.2" data-delay="880"></div>
         </div>
-      </div>
-      <div class="orbital-caption" aria-hidden="true"><span>FIG. 01 / THE AUTONOMOUS SYSTEM</span><span>Independent parts.<br />One coordinated whole.</span></div>
-      <a class="world-link" href="world/">Inside the process <span aria-hidden="true">↗</span><small>A scroll-through exploration</small></a>
-      <div class="hero-meta">
-        <a class="hero-scroll" id="he4" href="#statement">↓ &nbsp; Scroll to explore</a>
-        <div class="hero-loc" id="he5">Atlanta, GA — EST</div>
-      </div>
-    </section>
 
-    <!-- ═══ STATEMENT ═══ -->
-    <section class="grid-sec" id="statement">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">01</i>About<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <h2 class="reveal">
-            I lead facility projects at UPS by day and build the software that
-            runs operations by craft —
-            <span class="dim"
-              >from a self-hosted deployment platform to the bid analysis,
-              reporting, and AI audit tools my teams use every week.
-              Architecture to implementation, no hand-offs.</span
-            >
-          </h2>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ WHAT I BUILD ═══ -->
-    <section class="grid-sec" id="build">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">02</i>What I build<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <div class="svc-head">
-            <h2 class="display reveal">
-              Three kinds of systems, one standard: they run without me.
-            </h2>
+        <div class="hero-copy">
+          <p class="chapter">
+            <span class="no">No.01</span><span class="name">First wash</span>
+            <span class="pig">PR122 · PY74 · PB35</span>
+          </p>
+          <p class="kicker">Khang Nguyen — Project Engineer &amp; Full-Stack Builder</p>
+          <h1 data-split>Systems that <em>ship</em> themselves.</h1>
+          <p class="hero-lede rv" style="--d: 520ms">
+            Enterprise SaaS, workflow automation, and AI-enabled tooling — built by an
+            engineer who sits inside real operations.
+          </p>
+          <div class="hero-cta rv" style="--d: 620ms">
+            <a class="btn btn-ink" href="#work">See the work<span class="chip" aria-hidden="true">↓</span></a>
+            <a class="btn btn-ghost" href="#contact">Start a conversation</a>
           </div>
-          <div class="svc-grid">
-            <div class="svc reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <path
-                  d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"
-                />
-              </svg>
+          <p class="status rv" style="--d: 720ms">
+            <span class="status-drop" aria-hidden="true"></span>
+            Open to engineering roles — Atlanta or remote
+          </p>
+        </div>
+
+        <dl class="hero-facts rv" style="--d: 820ms">
+          <div><dt>~30s</dt><dd>git push to live on NoiGate</dd></div>
+          <div><dt>4</dt><dd>systems running in production</dd></div>
+          <div><dt>10 yrs</dt><dd>across engineering, code &amp; design</dd></div>
+        </dl>
+        <a class="scroll-cue" href="#about"><span aria-hidden="true">↓</span> The paint's still wet — scroll</a>
+      </section>
+
+      <!-- ═══ 02 · PIGMENT — about ═══ -->
+      <section class="sec about" id="about" data-pig="rose">
+        <div class="wash a-rose" data-pig="rose" data-seed="57" data-drift="0.08"></div>
+        <div class="wash bleed a-bleed" data-pig="cerulean" data-seed="63" data-drift="-0.06"></div>
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.02</span><span class="name">About</span>
+              <span class="pig">PV19 · Quinacridone Rose</span>
+            </p>
+            <p class="margin-note">Pigment — the raw material.</p>
+          </header>
+          <div class="about-grid">
+            <p class="statement rv">
+              I lead facility projects at <span class="hl" data-pig="yellow">UPS by day</span> and build
+              the software that <span class="hl" data-pig="rose">runs operations by craft</span> —
+              <span class="dim">from a self-hosted deployment platform to the bid analysis, reporting,
+              and AI audit tools my teams use every week. Architecture to implementation,
+              no hand-offs.</span>
+            </p>
+            <dl class="about-facts rv" style="--d: 120ms">
+              <div><dt>By day</dt><dd>Project Engineer, United Parcel Service</dd></div>
+              <div><dt>By craft</dt><dd>Full-stack &amp; platform builder</dd></div>
+              <div><dt>Before that</dt><dd>Web developer, then designer &amp; filmmaker</dd></div>
+              <div><dt>Based in</dt><dd>Atlanta, Georgia — EST</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ 03 · THREE PRIMARIES — what I build ═══ -->
+      <section class="sec build" id="build" data-pig="cerulean">
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.03</span><span class="name">What I build</span>
+              <span class="pig">PB35 · PR122 · PY74</span>
+            </p>
+            <p class="margin-note">Three primaries. Everything else is mixed from these.</p>
+          </header>
+          <h2 class="display" data-split>Three kinds of systems, one standard: they run without me.</h2>
+
+          <div class="primaries">
+            <article class="primary rv" data-pig="cerulean" style="--d: 0ms">
+              <div class="primary-swatch" aria-hidden="true">
+                <div class="wash" data-pig="cerulean" data-seed="71" data-layers="34"></div>
+              </div>
+              <p class="primary-code">PB35 · Cerulean</p>
               <h3>Enterprise SaaS &amp; Infrastructure</h3>
               <p>
-                Multi-tenant platforms with Docker isolation, webhook-driven
-                zero-downtime deploys, RBAC and audit logs, encrypted secrets,
-                and managed databases — APIs and event-driven pipelines designed
-                to run unattended.
+                Multi-tenant platforms with Docker isolation, webhook-driven zero-downtime
+                deploys, RBAC and audit logs, encrypted secrets, and managed databases — APIs
+                and event-driven pipelines designed to run unattended.
               </p>
-            </div>
-            <div class="svc reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-                <path d="M8 12h8M12 8v8" />
-              </svg>
+            </article>
+            <article class="primary rv" data-pig="rose" style="--d: 90ms">
+              <div class="primary-swatch" aria-hidden="true">
+                <div class="wash" data-pig="rose" data-seed="83" data-layers="34"></div>
+              </div>
+              <p class="primary-code">PR122 · Opera Rose</p>
               <h3>AI-Enabled Workflows</h3>
               <p>
-                Practical LLM integration into real operational work — like
-                auditing monthly financial reports against contracted scope —
-                plus an AI-augmented development practice that compresses
-                delivery time without cutting quality.
+                Practical LLM integration into real operational work — like auditing monthly
+                financial reports against contracted scope — plus an AI-augmented development
+                practice that compresses delivery time without cutting quality.
               </p>
-            </div>
-            <div class="svc reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <path d="M4 6h16M4 12h16M4 18h10" />
-                <circle cx="19" cy="18" r="2" />
-              </svg>
+            </article>
+            <article class="primary rv" data-pig="yellow" style="--d: 180ms">
+              <div class="primary-swatch" aria-hidden="true">
+                <div class="wash" data-pig="yellow" data-seed="97" data-layers="34"></div>
+              </div>
+              <p class="primary-code">PY74 · Hansa Yellow</p>
               <h3>Operational Tooling &amp; Automation</h3>
               <p>
-                Purpose-built tools that replace spreadsheets and file churn:
-                contractor bid analysis, weekly ops reporting, budget and RFA
-                workflows — adopted by real teams because they remove work
-                instead of adding it.
+                Purpose-built tools that replace spreadsheets and file churn: contractor bid
+                analysis, weekly ops reporting, budget and RFA workflows — adopted by real teams
+                because they remove work instead of adding it.
               </p>
-            </div>
+            </article>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="wash bleed b-bleed" data-pig="ultra" data-seed="101" data-drift="-0.05"></div>
+      </section>
 
-    <!-- ═══ WORK ═══ -->
-    <section class="grid-sec" id="work">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">03</i>Selected work<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <h2 class="display reveal">Built for the real world.</h2>
-          <p class="lede reveal" style="margin-top: 20px">
-            One public platform, two internal tools running inside UPS
-            workflows, and one AI audit pipeline — all in production.
-          </p>
+      <!-- ═══ 04 · THE PAINTINGS — selected work ═══ -->
+      <section class="sec work" id="work" data-pig="ultra">
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.04</span><span class="name">Selected work</span>
+              <span class="pig">Mixed media</span>
+            </p>
+            <p class="margin-note">Four finished paintings, all hanging in production.</p>
+          </header>
+          <div class="work-intro">
+            <h2 class="display" data-split>Built for the real world.</h2>
+            <p class="lede rv">
+              One public platform, two internal tools running inside UPS workflows, and one
+              AI audit pipeline — all in production.
+            </p>
+          </div>
 
-          <div class="work-grid">
-            <!-- NOIGATE -->
-            <article class="wcard reveal">
-              <div class="visual">
-                <div class="mock">
-                  <div class="bar">
-                    <i></i><i></i><i></i><b>launchport — deploy</b>
-                  </div>
-                  <div class="pad">
+          <div class="paintings">
+            <!-- NoiGate -->
+            <article class="painting feature rv" data-pig="ultra">
+              <div class="canvas" aria-hidden="true">
+                <div class="wash p-a" data-pig="ultra" data-seed="111"></div>
+                <div class="wash p-b" data-pig="cerulean" data-seed="113"></div>
+                <div class="mock mock-term">
+                  <div class="mock-bar"><i></i><i></i><i></i><b>launchport — deploy</b></div>
+                  <div class="mock-pad">
                     <span class="ok">$ git push origin main</span>
                     <span class="mut"># webhook received by NoiGate</span>
-                    ► Building container…
-                    <span class="mut">framework auto-detected</span>
-                    ► Health check passed · routing updated
-                    <span class="ok"
-                      >✓ Live at https://myapp.launchport.org — 30s</span
-                    >
+                    <span>► Building container…</span>
+                    <span class="mut">  framework auto-detected</span>
+                    <span>► Health check passed · routing updated</span>
+                    <span class="ok">✓ Live at myapp.launchport.org — 30s</span>
                   </div>
                 </div>
               </div>
-              <div class="info">
-                <div class="row1">
+              <div class="painting-info">
+                <p class="painting-code"><span>Painting No.1</span><span>PB29 + PB35</span></p>
+                <div class="painting-title">
                   <h3>NoiGate</h3>
                   <span class="badge">Live SaaS</span>
                 </div>
                 <p>
-                  A self-hosted git-to-production PaaS: push to GitHub and
-                  NoiGate auto-detects the framework, builds an isolated
-                  container, wires routing and SSL — live in ~30 seconds.
-                  Zero-downtime swaps, PR previews, managed MySQL/Redis,
-                  encrypted secrets, a CLI, and multi-tenant RBAC with audit
-                  logs.
+                  A self-hosted git-to-production PaaS: push to GitHub and NoiGate auto-detects
+                  the framework, builds an isolated container, wires routing and SSL — live in
+                  ~30 seconds. Zero-downtime swaps, PR previews, managed MySQL/Redis, encrypted
+                  secrets, a CLI, and multi-tenant RBAC with audit logs.
                 </p>
-                <div class="tags">
-                  <span>Docker</span><span>Nginx</span><span>Node.js</span
-                  ><span>CI/CD</span><span>RBAC</span>
-                </div>
-                <div class="links">
-                  <a
-                    class="text-link"
-                    href="https://launchport.org"
-                    target="_blank"
-                    rel="noopener"
-                    >launchport.org ↗</a
-                  >
-                  <a
-                    class="text-link"
-                    href="https://github.com/khangnguyen321/hosting-platform"
-                    target="_blank"
-                    rel="noopener"
-                    >GitHub ↗</a
-                  >
+                <ul class="tags" aria-label="Stack">
+                  <li>Docker</li><li>Nginx</li><li>Node.js</li><li>CI/CD</li><li>RBAC</li>
+                </ul>
+                <div class="painting-links">
+                  <a class="text-link" href="https://launchport.org" target="_blank" rel="noopener">launchport.org <span aria-hidden="true">↗</span></a>
+                  <a class="text-link" href="https://github.com/khangnguyen321/hosting-platform" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
                 </div>
               </div>
             </article>
 
-            <!-- BID RECAP -->
-            <article class="wcard reveal">
-              <div class="visual">
+            <!-- Bid Recap -->
+            <article class="painting rv" data-pig="orange">
+              <div class="canvas" aria-hidden="true">
+                <div class="wash p-a" data-pig="yellow" data-seed="121"></div>
+                <div class="wash p-b" data-pig="orange" data-seed="127"></div>
                 <div class="mock">
-                  <div class="bar">
-                    <i></i><i></i><i></i><b>bid recap — rankings</b>
-                  </div>
-                  <div class="pad" style="font-family: var(--font-body)">
+                  <div class="mock-bar"><i></i><i></i><i></i><b>bid recap — rankings</b></div>
+                  <div class="mock-pad">
                     <table>
-                      <tr>
-                        <th>#</th>
-                        <th>Bidder</th>
-                        <th>Total</th>
-                        <th>Days</th>
-                        <th>OHP</th>
-                      </tr>
-                      <tr>
-                        <td class="rank">1</td>
-                        <td>Contractor A</td>
-                        <td>$412K</td>
-                        <td>90</td>
-                        <td>8%</td>
-                      </tr>
-                      <tr>
-                        <td class="rank">2</td>
-                        <td>Contractor B</td>
-                        <td>$448K</td>
-                        <td>75</td>
-                        <td>10%</td>
-                      </tr>
-                      <tr>
-                        <td class="rank">3</td>
-                        <td>Contractor C</td>
-                        <td>$487K</td>
-                        <td>85</td>
-                        <td>12%</td>
-                      </tr>
+                      <tr><th>#</th><th>Bidder</th><th>Total</th><th>Days</th><th>OHP</th></tr>
+                      <tr><td class="rank">1</td><td>Contractor A</td><td>$412K</td><td>90</td><td>8%</td></tr>
+                      <tr><td class="rank">2</td><td>Contractor B</td><td>$448K</td><td>75</td><td>10%</td></tr>
+                      <tr><td class="rank">3</td><td>Contractor C</td><td>$487K</td><td>85</td><td>12%</td></tr>
                     </table>
-                    <div style="margin-top: 10px" class="barfill">
-                      <i style="width: 84%"></i>
-                    </div>
-                    <div style="margin-top: 5px" class="barfill">
-                      <i style="width: 70%; opacity: 0.5"></i>
-                    </div>
+                    <div class="barfill"><i style="width: 84%"></i></div>
+                    <div class="barfill"><i style="width: 70%; opacity: 0.5"></i></div>
                   </div>
                 </div>
               </div>
-              <div class="info">
-                <div class="row1">
+              <div class="painting-info">
+                <p class="painting-code"><span>Painting No.2</span><span>PY74 + PO73</span></p>
+                <div class="painting-title">
                   <h3>Bid Recap</h3>
                   <span class="badge">Internal · UPS</span>
                 </div>
                 <p>
-                  Contractors return bids in Excel against project scope; Bid
-                  Recap normalizes them into a comparison dashboard —
-                  division-level cost, schedule, OHP, and alternates side by
-                  side. Automatic rankings with override, and governance built
-                  in: choosing anyone but the lowest bidder requires written
-                  justification.
+                  Contractors return bids in Excel against project scope; Bid Recap normalizes
+                  them into a comparison dashboard — division-level cost, schedule, OHP, and
+                  alternates side by side. Automatic rankings with override, and governance built
+                  in: choosing anyone but the lowest bidder requires written justification.
                 </p>
-                <div class="tags">
-                  <span>Workflow automation</span><span>Excel ingestion</span
-                  ><span>Decision logic</span>
-                </div>
+                <ul class="tags" aria-label="Focus">
+                  <li>Workflow automation</li><li>Excel ingestion</li><li>Decision logic</li>
+                </ul>
               </div>
             </article>
 
-            <!-- WEEKLY OPS REVIEW -->
-            <article class="wcard reveal">
-              <div class="visual">
+            <!-- Weekly Ops Review -->
+            <article class="painting rv" data-pig="viridian" style="--d: 90ms">
+              <div class="canvas" aria-hidden="true">
+                <div class="wash p-a" data-pig="viridian" data-seed="131"></div>
+                <div class="wash p-b" data-pig="sap" data-seed="137"></div>
                 <div class="mock">
-                  <div class="bar">
-                    <i></i><i></i><i></i><b>weekly ops review</b>
-                  </div>
-                  <div class="pad" style="font-family: var(--font-body)">
-                    <div class="check done">
-                      <span class="box">✓</span
-                      ><span>Carry over open items from last week</span
-                      ><b class="st">Done</b>
-                    </div>
-                    <div class="check done">
-                      <span class="box">✓</span
-                      ><span>Decommission table — Bay 4 status</span
-                      ><b class="st">Done</b>
-                    </div>
-                    <div class="check">
-                      <span class="box"></span
-                      ><span>Contractor schedule review</span
-                      ><b class="st">In&nbsp;progress</b>
-                    </div>
-                    <div class="check">
-                      <span class="box"></span
-                      ><span>Export &amp; distribute report</span
-                      ><b class="st">To&nbsp;do</b>
-                    </div>
+                  <div class="mock-bar"><i></i><i></i><i></i><b>weekly ops review</b></div>
+                  <div class="mock-pad">
+                    <div class="check done"><span class="box">✓</span><span>Carry over open items</span><b>Done</b></div>
+                    <div class="check done"><span class="box">✓</span><span>Decommission — Bay 4</span><b>Done</b></div>
+                    <div class="check"><span class="box"></span><span>Contractor schedule review</span><b>In progress</b></div>
+                    <div class="check"><span class="box"></span><span>Export &amp; distribute</span><b>To do</b></div>
                   </div>
                 </div>
               </div>
-              <div class="info">
-                <div class="row1">
+              <div class="painting-info">
+                <p class="painting-code"><span>Painting No.3</span><span>PG7 + PY150</span></p>
+                <div class="painting-title">
                   <h3>Weekly Ops Review</h3>
                   <span class="badge">Internal · Team</span>
                 </div>
                 <p>
-                  Replaced the weekly ritual of recreating report files in
-                  SharePoint with a persistent meeting system: one-click sync
-                  from last week so open items carry forward, live action
-                  rollups, templates for retros, 1:1s and planning, present
-                  mode, and Markdown/JSON export. Zero new files created since
-                  launch.
+                  Replaced the weekly ritual of recreating report files in SharePoint with a
+                  persistent meeting system: one-click sync from last week so open items carry
+                  forward, live action rollups, templates for retros, 1:1s and planning, present
+                  mode, and Markdown/JSON export. Zero new files created since launch.
                 </p>
-                <div class="tags">
-                  <span>Reporting system</span><span>Action tracking</span
-                  ><span>Exports</span>
-                </div>
+                <ul class="tags" aria-label="Focus">
+                  <li>Reporting system</li><li>Action tracking</li><li>Exports</li>
+                </ul>
               </div>
             </article>
 
-            <!-- AI FINANCIAL AUDIT -->
-            <article class="wcard reveal">
-              <div class="visual">
+            <!-- AI Financial Audit -->
+            <article class="painting feature flip rv" data-pig="violet">
+              <div class="canvas" aria-hidden="true">
+                <div class="wash p-a" data-pig="violet" data-seed="141"></div>
+                <div class="wash p-b" data-pig="rose" data-seed="149"></div>
                 <div class="mock">
-                  <div class="bar">
-                    <i></i><i></i><i></i><b>audit — findings.html</b>
-                  </div>
-                  <div class="pad" style="font-family: var(--font-body)">
-                    <div class="aline">
-                      <span class="flag">FLAG</span
-                      ><span
-                        >Line 42 — charge outside contracted scope §3.2</span
-                      >
-                    </div>
-                    <div class="aline">
-                      <span class="flag">FLAG</span
-                      ><span
-                        >Duplicate billing detected — Feb / Mar entries</span
-                      >
-                    </div>
-                    <div class="aline pass">
-                      <span class="flag">PASS</span
-                      ><span>Labor rates match agreement schedule</span>
-                    </div>
-                    <div class="aline pass">
-                      <span class="flag">PASS</span
-                      ><span>Materials reconciled to PO history</span>
-                    </div>
+                  <div class="mock-bar"><i></i><i></i><i></i><b>audit — findings.html</b></div>
+                  <div class="mock-pad">
+                    <div class="aline"><span class="flag">Flag</span><span>Line 42 — charge outside contracted scope §3.2</span></div>
+                    <div class="aline"><span class="flag">Flag</span><span>Duplicate billing — Feb / Mar entries</span></div>
+                    <div class="aline pass"><span class="flag">Pass</span><span>Labor rates match agreement schedule</span></div>
+                    <div class="aline pass"><span class="flag">Pass</span><span>Materials reconciled to PO history</span></div>
                   </div>
                 </div>
               </div>
-              <div class="info">
-                <div class="row1">
+              <div class="painting-info">
+                <p class="painting-code"><span>Painting No.4</span><span>PV23 + PR122</span></p>
+                <div class="painting-title">
                   <h3>AI Financial Audit</h3>
                   <span class="badge">AI Workflow</span>
                 </div>
                 <p>
-                  An LLM pipeline that audits monthly financial reports against
-                  the contracted scope of work. It cross-references charges to
-                  scope and outputs a structured HTML findings report — what's
-                  wrong, exactly where, and insights on patterns — with a human
-                  on final approval.
+                  An LLM pipeline that audits monthly financial reports against the contracted
+                  scope of work. It cross-references charges to scope and outputs a structured
+                  HTML findings report — what's wrong, exactly where, and insights on patterns —
+                  with a human on final approval.
                 </p>
-                <div class="tags">
-                  <span>LLM pipeline</span><span>Document analysis</span
-                  ><span>HTML reports</span>
-                </div>
+                <ul class="tags" aria-label="Focus">
+                  <li>LLM pipeline</li><li>Document analysis</li><li>HTML reports</li>
+                </ul>
               </div>
             </article>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="wash bleed w-bleed" data-pig="violet" data-seed="151" data-drift="-0.05"></div>
+      </section>
 
-    <!-- ═══ APPROACH ═══ -->
-    <section class="grid-sec" id="approach">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">04</i>My approach<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <h2 class="display reveal">Where Operations Meet Velocity.</h2>
+      <!-- ═══ 05 · GLAZING — approach. The three primaries from No.03 are
+           layered one glaze at a time as each principle scrolls past. ═══ -->
+      <section class="sec approach" id="approach" data-pig="violet">
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.05</span><span class="name">My approach</span>
+              <span class="pig">PV23 · Dioxazine Violet</span>
+            </p>
+            <p class="margin-note">Glazing — thin layers that build depth without muddying.</p>
+          </header>
+          <h2 class="display" data-split>Where operations meet velocity.</h2>
 
-          <div class="appr-row reveal">
-            <div>
-              <h3>Built On Real Operations</h3>
-              <p>
-                I don't guess at requirements — I live in them. Leading facility
-                projects, budgets, and contractors at UPS means every tool I
-                build starts from a workflow I've personally run. That's why
-                they get adopted.
-              </p>
-            </div>
-            <div class="vis">
-              <div class="flow">
-                <div class="node">
-                  <span class="pulse"></span><b>Field problem</b> — hours lost
-                  to manual work
-                </div>
-                <div class="link"></div>
-                <div class="node">
-                  <b>System design</b> — APIs, events, boring reliable tech
-                </div>
-                <div class="link"></div>
-                <div class="node">
-                  <b>In production</b> — adopted by the team that needed it
-                </div>
+          <div class="glaze-layout">
+            <div class="glaze" data-applied="0" aria-hidden="true">
+              <div class="glaze-paper">
+                <div class="wash g g1" data-pig="yellow" data-seed="161" data-layers="40"></div>
+                <div class="wash g g2" data-pig="rose" data-seed="167" data-layers="40"></div>
+                <div class="wash g g3" data-pig="cerulean" data-seed="173" data-layers="40"></div>
               </div>
+              <p class="glaze-caption"><span class="glaze-count">0</span> of 3 glazes applied</p>
             </div>
-          </div>
 
-          <div class="appr-row flip reveal">
-            <div>
-              <h3>AI - Augmented Delivery</h3>
-              <p>
-                LLM-assisted development is core practice, not a gimmick —
-                faster iterations, broader test coverage, tighter reviews. It's
-                how one engineer ships platform-scale software, and how I'd help
-                a team raise its delivery bar.
-              </p>
-            </div>
-            <div class="vis">
-              <div class="aipanel">
-                <div class="msg me">
-                  <span class="cap">Engineer</span>Draft the rollback path for
-                  zero-downtime swaps
+            <div class="principles">
+              <article class="principle" data-layer="1" data-pig="yellow">
+                <p class="principle-no">Glaze 1 · Hansa Yellow</p>
+                <h3>Built on real operations</h3>
+                <p>
+                  I don't guess at requirements — I live in them. Leading facility projects,
+                  budgets, and contractors at UPS means every tool I build starts from a workflow
+                  I've personally run. That's why they get adopted.
+                </p>
+                <div class="vis flow">
+                  <div class="node"><span class="pulse" aria-hidden="true"></span><b>Field problem</b> — hours lost to manual work</div>
+                  <div class="link" aria-hidden="true"></div>
+                  <div class="node"><b>System design</b> — APIs, events, boring reliable tech</div>
+                  <div class="link" aria-hidden="true"></div>
+                  <div class="node"><b>In production</b> — adopted by the team that needed it</div>
                 </div>
-                <div class="msg">
-                  <span class="cap">AI pair</span>Previous container kept warm —
-                  atomic Nginx upstream switch, health-gated…
-                </div>
-                <div class="msg me">
-                  <span class="cap">Engineer</span>Ship it. Add the failure case
-                  to the test suite.
-                </div>
-              </div>
-            </div>
-          </div>
+              </article>
 
-          <div class="appr-row reveal">
-            <div>
-              <h3>Measured - Monitored - Trusted</h3>
-              <p>
-                A system isn't done when it ships — it's done when it's trusted.
-                Uptime monitoring, audit trails, and metrics are built in from
-                day one, so the people relying on the tool never have to wonder
-                if it's working.
-              </p>
-            </div>
-            <div class="vis">
-              <div class="uptime">
-                <div class="head">
-                  <span>status — all systems</span><b>99.9% uptime</b>
+              <article class="principle" data-layer="2" data-pig="rose">
+                <p class="principle-no">Glaze 2 · Opera Rose</p>
+                <h3>AI-augmented delivery</h3>
+                <p>
+                  LLM-assisted development is core practice, not a gimmick — faster iterations,
+                  broader test coverage, tighter reviews. It's how one engineer ships
+                  platform-scale software, and how I'd help a team raise its delivery bar.
+                </p>
+                <div class="vis chat">
+                  <div class="msg me"><span class="cap">Engineer</span>Draft the rollback path for zero-downtime swaps</div>
+                  <div class="msg"><span class="cap">AI pair</span>Previous container kept warm — atomic Nginx upstream switch, health-gated…</div>
+                  <div class="msg me"><span class="cap">Engineer</span>Ship it. Add the failure case to the test suite.</div>
                 </div>
-                <svg viewBox="0 0 300 70" fill="none">
-                  <path
-                    d="M0 52 C30 50 40 38 70 36 S120 44 150 34 S210 20 240 24 S280 16 300 14"
-                    stroke="#2F6F73"
-                    stroke-width="1.6"
-                    opacity=".9"
-                  />
-                  <path
-                    d="M0 52 C30 50 40 38 70 36 S120 44 150 34 S210 20 240 24 S280 16 300 14 V70 H0 Z"
-                    fill="#2F6F73"
-                    opacity=".09"
-                  />
-                </svg>
-                <div class="ticks">
-                  <i></i><i></i><i></i><i></i><i class="dim"></i><i></i><i></i
-                  ><i></i><i></i><i></i><i></i><i></i>
+              </article>
+
+              <article class="principle" data-layer="3" data-pig="cerulean">
+                <p class="principle-no">Glaze 3 · Cerulean</p>
+                <h3>Measured, monitored, trusted</h3>
+                <p>
+                  A system isn't done when it ships — it's done when it's trusted. Uptime
+                  monitoring, audit trails, and metrics are built in from day one, so the people
+                  relying on the tool never have to wonder if it's working.
+                </p>
+                <div class="vis uptime">
+                  <div class="uptime-head"><span>status — all systems</span><b>99.9% uptime</b></div>
+                  <svg viewBox="0 0 300 70" fill="none" aria-hidden="true">
+                    <path d="M0 52 C30 50 40 38 70 36 S120 44 150 34 S210 20 240 24 S280 16 300 14 V70 H0 Z" fill="currentColor" opacity=".12" />
+                    <path d="M0 52 C30 50 40 38 70 36 S120 44 150 34 S210 20 240 24 S280 16 300 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                  <div class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="dim"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
                 </div>
-              </div>
+              </article>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="wash bleed ap-bleed" data-pig="viridian" data-seed="179" data-drift="-0.05"></div>
+      </section>
 
-    <!-- ═══ HOW IT WORKS ═══ -->
-    <section class="grid-sec" id="how">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">05</i>How it works<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <h2 class="display reveal">
-            From Operational Problem to Running System.
-          </h2>
-          <div class="steps">
-            <div class="step reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M21 21l-4.3-4.3" />
-              </svg>
-              <h3>Understand The Operation</h3>
-              <p>
-                Sit with the ops, product, and field teams doing the work. Map
-                the real workflow — not the org-chart version.
-              </p>
+      <!-- ═══ 06 · WET-ON-WET — how it works ═══ -->
+      <section class="sec process" id="process" data-pig="viridian">
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.06</span><span class="name">How it works</span>
+              <span class="pig">PG7 · Phthalo Green</span>
+            </p>
+            <p class="margin-note">Wet-on-wet — each step bleeds into the next.</p>
+          </header>
+          <h2 class="display" data-split>From operational problem to running system.</h2>
+
+          <div class="flowline">
+            <div class="wet-line" aria-hidden="true">
+              <div class="wash" data-pig="viridian" data-pig2="cerulean" data-seed="181" data-aspect="6" data-layers="30" data-calm="0.4"></div>
             </div>
-            <div class="step reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <path d="M4 20V8l8-5 8 5v12" />
-                <path d="M9 20v-6h6v6" />
-              </svg>
-              <h3>Architect For The Long Run</h3>
-              <p>
-                Write it down RFC-style: APIs, event-driven where it pays,
-                boring reliable tech everywhere else.
-              </p>
-            </div>
-            <div class="step reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <path d="M8 6l-5 6 5 6M16 6l5 6-5 6" />
-              </svg>
-              <h3>Build AI-Augmented</h3>
-              <p>
-                LLM-assisted development as a force multiplier — faster
-                iterations, better coverage, tighter reviews.
-              </p>
-            </div>
-            <div class="step reveal">
-              <svg
-                class="ic"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-              >
-                <path d="M3 17l6-6 4 4 8-8" />
-                <path d="M15 7h6v6" />
-              </svg>
-              <h3>Ship, Monitor, Evolve</h3>
-              <p>
-                Deploy on automated pipelines, watch the metrics, and iterate
-                with the people using it.
-              </p>
-            </div>
+            <ol class="steps">
+              <li class="step rv" style="--d: 0ms">
+                <span class="drop" aria-hidden="true">1</span>
+                <h3>Understand the operation</h3>
+                <p>Sit with the ops, product, and field teams doing the work. Map the real workflow — not the org-chart version.</p>
+              </li>
+              <li class="step rv" style="--d: 120ms">
+                <span class="drop" aria-hidden="true">2</span>
+                <h3>Architect for the long run</h3>
+                <p>Write it down RFC-style: APIs, event-driven where it pays, boring reliable tech everywhere else.</p>
+              </li>
+              <li class="step rv" style="--d: 240ms">
+                <span class="drop" aria-hidden="true">3</span>
+                <h3>Build AI-augmented</h3>
+                <p>LLM-assisted development as a force multiplier — faster iterations, better coverage, tighter reviews.</p>
+              </li>
+              <li class="step rv" style="--d: 360ms">
+                <span class="drop" aria-hidden="true">4</span>
+                <h3>Ship, monitor, evolve</h3>
+                <p>Deploy on automated pipelines, watch the metrics, and iterate with the people using it.</p>
+              </li>
+            </ol>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="wash bleed pr-bleed" data-pig="orange" data-seed="191" data-drift="-0.05"></div>
+      </section>
 
-    <!-- ═══ EXPERIENCE ═══ -->
-    <section class="grid-sec" id="experience">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">06</i>Experience<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <h2 class="display reveal">
-            A Decade Across Engineering, Code & Design.
-          </h2>
+      <!-- ═══ 07 · STRATA — experience. Each role is a dried band of color. ═══ -->
+      <section class="sec experience" id="experience" data-pig="orange">
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.07</span><span class="name">Experience</span>
+              <span class="pig">PO73 · Pyrrole Orange</span>
+            </p>
+            <p class="margin-note">Strata — every dried layer still shows through.</p>
+          </header>
+          <h2 class="display" data-split>A decade across engineering, code &amp; design.</h2>
 
-          <div class="xp reveal">
-            <div class="yr now">2024 — Now</div>
-            <div>
-              <h3>Project Engineer</h3>
-              <div class="org">United Parcel Service</div>
-            </div>
-            <p>
-              Lead facility decommissioning programs end-to-end — shutdown
-              sequencing, contractor management, asset disposition, and site
-              remediation under full environmental and safety compliance.
-            </p>
-          </div>
-          <div class="xp reveal">
-            <div class="yr now">2023 — Now</div>
-            <div>
-              <h3>BaSE — REFCO Coordinator</h3>
-              <div class="org">United Parcel Service</div>
-            </div>
-            <p>
-              Own all requests-for-authorization under $500K: budget
-              preparation, reconciliation, expense-vs-capitalization
-              classification, and audit documentation — with Power BI reporting
-              on top.
-            </p>
-          </div>
-          <div class="xp reveal">
-            <div class="yr">2022 — 2023</div>
-            <div>
-              <h3>Buildings &amp; Systems Engineering</h3>
-              <div class="org">United Parcel Service</div>
-            </div>
-            <p>
-              Technical and logistical support for automation teams —
-              troubleshooting, parts and inventory control through Maximo, and
-              mechanic supervision on live systems.
-            </p>
-          </div>
-          <div class="xp reveal">
-            <div class="yr">2019 — 2021</div>
-            <div>
-              <h3>Full-Stack Web Developer</h3>
-              <div class="org">Atlanta Network Technology</div>
-            </div>
-            <p>
-              Built and maintained e-commerce platforms end-to-end — UI/UX,
-              backend, and feature delivery with PHP, JavaScript, MySQL,
-              HTML5/CSS3.
-            </p>
-          </div>
-          <div class="xp reveal">
-            <div class="yr">2016 — 2019</div>
-            <div>
-              <h3>Design &amp; Media</h3>
-              <div class="org">Capture The Light · KNV Printing</div>
-            </div>
-            <p>
-              Cinematic wedding videography and editing; brand identity, layout,
-              logo, and icon design. Where the eye for design in everything
-              above comes from.
-            </p>
-          </div>
+          <ol class="strata">
+            <li class="stratum rv" data-pig="orange">
+              <div class="yr"><span class="band wash" data-pig="orange" data-seed="201" data-aspect="3.4" data-layers="22" aria-hidden="true"></span><span class="yr-t">2024 — Now</span></div>
+              <div class="role"><h3>Project Engineer</h3><p class="org">United Parcel Service</p></div>
+              <p class="what">Lead facility decommissioning programs end-to-end — shutdown sequencing, contractor management, asset disposition, and site remediation under full environmental and safety compliance.</p>
+            </li>
+            <li class="stratum rv" data-pig="yellow">
+              <div class="yr"><span class="band wash" data-pig="yellow" data-seed="203" data-aspect="3.4" data-layers="22" aria-hidden="true"></span><span class="yr-t">2023 — Now</span></div>
+              <div class="role"><h3>BaSE — REFCO Coordinator</h3><p class="org">United Parcel Service</p></div>
+              <p class="what">Own all requests-for-authorization under $500K: budget preparation, reconciliation, expense-vs-capitalization classification, and audit documentation — with Power BI reporting on top.</p>
+            </li>
+            <li class="stratum rv" data-pig="viridian">
+              <div class="yr"><span class="band wash" data-pig="viridian" data-seed="207" data-aspect="3.4" data-layers="22" aria-hidden="true"></span><span class="yr-t">2022 — 2023</span></div>
+              <div class="role"><h3>Buildings &amp; Systems Engineering</h3><p class="org">United Parcel Service</p></div>
+              <p class="what">Technical and logistical support for automation teams — troubleshooting, parts and inventory control through Maximo, and mechanic supervision on live systems.</p>
+            </li>
+            <li class="stratum rv" data-pig="cerulean">
+              <div class="yr"><span class="band wash" data-pig="cerulean" data-seed="211" data-aspect="3.4" data-layers="22" aria-hidden="true"></span><span class="yr-t">2019 — 2021</span></div>
+              <div class="role"><h3>Full-Stack Web Developer</h3><p class="org">Atlanta Network Technology</p></div>
+              <p class="what">Built and maintained e-commerce platforms end-to-end — UI/UX, backend, and feature delivery with PHP, JavaScript, MySQL, HTML5/CSS3.</p>
+            </li>
+            <li class="stratum rv" data-pig="rose">
+              <div class="yr"><span class="band wash" data-pig="rose" data-seed="213" data-aspect="3.4" data-layers="22" aria-hidden="true"></span><span class="yr-t">2016 — 2019</span></div>
+              <div class="role"><h3>Design &amp; Media</h3><p class="org">Capture The Light · KNV Printing</p></div>
+              <p class="what">Cinematic wedding videography and editing; brand identity, layout, logo, and icon design. Where the eye for design in everything above comes from.</p>
+            </li>
+          </ol>
 
-          <div class="edu-line reveal">
-            <b>B.S. Computer Science</b> — Georgia Gwinnett College ·
+          <p class="edu rv">
+            <b>B.S. Computer Science</b> — Georgia Gwinnett College <span aria-hidden="true">·</span>
             <b>MTA</b> — Network Fundamentals
-          </div>
+          </p>
         </div>
-      </div>
-    </section>
+        <div class="wash bleed x-bleed" data-pig="cerulean" data-seed="217" data-drift="-0.05"></div>
+      </section>
 
-    <!-- ═══ CTA ═══ -->
-    <section class="grid-sec" id="cta">
-      <div class="sec-label reveal">
-        <i class="rule-line" aria-hidden="true"></i><i class="idx">07</i>Contact<i class="rule-line" aria-hidden="true"></i>
-      </div>
-      <div class="wrap">
-        <div class="content">
-          <div class="cta-grid">
-            <div class="cta-copy reveal">
-              <p class="eyebrow">Good systems start with a conversation</p>
-              <h2>What can we<br />build together<span>?</span></h2>
-              <p>A project, a role, or an operational problem worth solving. I’d love to hear what you have in mind.</p>
-              <a class="contact-email" href="mailto:hk.nguyen91@gmail.com">hk.nguyen91@gmail.com ↗</a>
-              <p class="contact-location">Based in Atlanta, Georgia.</p>
+      <!-- ═══ 08 · CLEAN PAPER — contact ═══ -->
+      <section class="sec contact" id="contact" data-pig="cerulean">
+        <div class="wash c-wash" data-pig="ultra" data-seed="223" data-drift="0.06"></div>
+        <div class="sec-inner">
+          <header class="chapter-head rv">
+            <p class="chapter">
+              <span class="no">No.08</span><span class="name">Contact</span>
+              <span class="pig">PB29 · Ultramarine</span>
+            </p>
+            <p class="margin-note">Clean paper. Your color goes here.</p>
+          </header>
+          <div class="contact-grid">
+            <div class="contact-copy">
+              <h2 class="display" data-split>What can we build <em>together?</em></h2>
+              <p class="lede rv">
+                A role, a project, or an operational problem worth solving. I'd love to hear
+                what you have in mind.
+              </p>
+              <a class="contact-email rv" href="mailto:hk.nguyen91@gmail.com">hk.nguyen91@gmail.com <span aria-hidden="true">↗</span></a>
+              <ul class="contact-links rv">
+                <li><a href="https://www.linkedin.com/in/khangnguyentk/" target="_blank" rel="noopener">LinkedIn <span aria-hidden="true">↗</span></a></li>
+                <li><a href="https://github.com/khangnguyen321" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></li>
+              </ul>
             </div>
-            <!-- no backend by design (static site, no secrets in repo): the send
-             button composes a prefilled email in the visitor's own mail client -->
-            <form class="contact-card reveal" id="contact-form" novalidate>
+
+            <!-- no backend by design (static site, no secrets in repo): submit
+                 composes a prefilled email in the visitor's own mail client -->
+            <form class="sheet rv" id="contact-form" novalidate style="--d: 120ms">
               <div class="field">
                 <label for="cf-name">Your name</label>
-                <input
-                  id="cf-name"
-                  name="name"
-                  type="text"
-                  placeholder="First name is fine"
-                  autocomplete="name"
-                  maxlength="80"
-                  required
-                />
+                <input id="cf-name" name="name" type="text" placeholder="First name is fine" autocomplete="name" maxlength="80" required />
+                <i class="ink-line" aria-hidden="true"></i>
               </div>
               <div class="field">
                 <label for="cf-msg">Your message</label>
-                <textarea
-                  id="cf-msg"
-                  name="message"
-                  rows="6"
-                  placeholder="A project, a role, or just a question — whatever's on your mind."
-                  maxlength="1800"
-                  required
-                ></textarea>
+                <textarea id="cf-msg" name="message" rows="5" placeholder="A role, a project, or just a question." maxlength="1800" required></textarea>
+                <i class="ink-line" aria-hidden="true"></i>
               </div>
-              <div class="cf-foot">
-                <button class="btn primary" type="submit">
-                  Compose email<span class="chip">↗</span>
-                </button>
+              <div class="sheet-foot">
+                <button class="btn btn-ink" type="submit">Compose email<span class="chip" aria-hidden="true">↗</span></button>
                 <p class="form-note">Opens a draft in your email app.</p>
-                <span class="cf-status" role="status" aria-live="polite"></span>
               </div>
+              <p class="cf-status" role="status" aria-live="polite"></p>
             </form>
           </div>
         </div>
-      </div>
-    </section>
-
+      </section>
     </main>
-    <!-- ═══ FOOTER — full width ═══ -->
-    <footer>
-      <div class="foot-wrap">
+
+    <!-- ═══ RINSE WATER — footer. Every pigment from the page, mixed. ═══ -->
+    <footer class="foot">
+      <div class="foot-water" aria-hidden="true">
+        <div class="wash fw fw1" data-pig="rose" data-seed="301"></div>
+        <div class="wash fw fw2" data-pig="ultra" data-seed="303"></div>
+        <div class="wash fw fw3" data-pig="cerulean" data-seed="307"></div>
+        <div class="wash fw fw4" data-pig="viridian" data-seed="311"></div>
+        <div class="wash fw fw5" data-pig="violet" data-seed="313"></div>
+      </div>
+      <div class="foot-inner">
+        <p class="chapter chapter-light">
+          <span class="no">Fin.</span><span class="name">Rinse water</span>
+          <span class="pig">All of the above</span>
+        </p>
+        <p class="signature" aria-hidden="true">Khang Nguyen<span>’26</span></p>
+        <p class="foot-note">Every color on this page ends up here.</p>
         <div class="foot-grid">
-          <div class="brand">Khang Nguyen<i>.</i></div>
           <div class="foot-col">
-            <div class="h">Elsewhere</div>
-            <a href="https://launchport.org" target="_blank" rel="noopener"
-              >launchport.org</a
-            >
-            <a
-              href="https://github.com/khangnguyen321/hosting-platform"
-              target="_blank"
-              rel="noopener"
-              >GitHub</a
-            >
+            <p class="foot-h">Say hello</p>
+            <a href="mailto:hk.nguyen91@gmail.com">hk.nguyen91@gmail.com</a>
+            <span>Atlanta, Georgia</span>
           </div>
-          <div class="foot-col foot-social">
-            <div class="h">Follow</div>
-            <div class="foot-social-row">
-              <a
-                href="https://www.linkedin.com/in/khangnguyentk/"
-                target="_blank"
-                rel="noopener"
-                aria-label="LinkedIn"
-              >
-                <svg
-                  class="ic"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2.5" />
-                  <path d="M7.5 10.5v6M7.5 7.5v.01M12 16.5v-3.75a2.25 2.25 0 0 1 4.5 0V16.5" />
-                </svg>
-              </a>
-              <a
-                href="https://www.facebook.com/kane.nguyen.319"
-                target="_blank"
-                rel="noopener"
-                aria-label="Facebook"
-              >
-                <svg
-                  class="ic"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                >
-                  <path
-                    d="M14.5 21v-7h2.4l.4-3H14.5v-1.9c0-.87.24-1.46 1.5-1.46h1.6V4.94c-.28-.04-1.22-.12-2.32-.12-2.3 0-3.88 1.4-3.88 3.98V11H9v3h2.4v7h3.1Z"
-                  />
-                </svg>
-              </a>
-              <a
-                href="https://github.com/khangnguyen321"
-                target="_blank"
-                rel="noopener"
-                aria-label="GitHub"
-              >
-                <svg
-                  class="ic"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                >
-                  <path
-                    d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.1 2.8 5 3.1 5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 3.6 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"
-                  />
-                </svg>
-              </a>
-            </div>
+          <div class="foot-col">
+            <p class="foot-h">Elsewhere</p>
+            <a href="https://www.linkedin.com/in/khangnguyentk/" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://github.com/khangnguyen321" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://www.facebook.com/kane.nguyen.319" target="_blank" rel="noopener">Facebook</a>
+          </div>
+          <div class="foot-col">
+            <p class="foot-h">Work</p>
+            <a href="https://launchport.org" target="_blank" rel="noopener">launchport.org</a>
+            <a href="https://github.com/khangnguyen321/hosting-platform" target="_blank" rel="noopener">NoiGate on GitHub</a>
+            <a href="world/">Inside the process</a>
           </div>
         </div>
         <div class="foot-base">
-          <span>© 2026 Khang Nguyen. All rights reserved.</span>
-          <a href="mailto:hk.nguyen91@gmail.com">hk.nguyen91@gmail.com</a>
+          <span>© 2026 Khang Nguyen. Painted in code.</span>
+          <a href="#top">Back to the first wash <span aria-hidden="true">↑</span></a>
         </div>
       </div>
-      <!-- /foot-wrap -->
     </footer>
 
+    <script src="watercolor.js"></script>
     <script src="script.js"></script>
-    <script src="polish.js"></script>
-
-    <!-- ═══ GYRE ENGINE — the persistent WebGL object. Module script: three.js is an ES
-     module; vendored locally (lib/) so the site keeps zero runtime CDN deps.
-     Reads OBJ_CFG + reduceMotion from the classic script's global lexical scope. ═══ -->
-    <script type="module" src="engine.js"></script>
   </body>
 </html>
